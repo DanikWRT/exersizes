@@ -34,8 +34,25 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM exercise_media") suspend fun allMediaOnce(): List<ExerciseMediaEntity>
 
     @Query("SELECT * FROM workout_exercises WHERE exerciseId=:exerciseId AND ((:variantId IS NULL AND variantId IS NULL) OR variantId=:variantId) AND id != :exclude ORDER BY createdAt DESC LIMIT 1") suspend fun lastExactWorkoutExercise(exerciseId: String, variantId: String?, exclude: String = ""): WorkoutExerciseEntity?
-    @Query("SELECT s.* FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.exerciseId=:exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId=:variantId) ORDER BY s.createdAt") fun exactVariantSets(exerciseId: String, variantId: String?): Flow<List<WorkoutSetEntity>>
-    @Query("SELECT s.* FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.exerciseId=:exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId=:variantId) ORDER BY s.createdAt DESC LIMIT 1") suspend fun lastSetForExerciseVariant(exerciseId: String, variantId: String?): WorkoutSetEntity?
+    @Query("""
+        SELECT s.*, ws.date as sessionDate
+        FROM workout_sets s
+        INNER JOIN workout_exercises we ON we.id = s.workoutExerciseId
+        INNER JOIN workout_sessions ws ON ws.id = we.sessionId
+        WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId)
+        ORDER BY ws.date, s.createdAt
+    """)
+    fun exactVariantSets(exerciseId: String, variantId: String?): Flow<List<WorkoutSetWithSessionDate>>
+    @Query("""
+        SELECT s.*, ws.date as sessionDate
+        FROM workout_sets s
+        INNER JOIN workout_exercises we ON we.id = s.workoutExerciseId
+        INNER JOIN workout_sessions ws ON ws.id = we.sessionId
+        WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId)
+        ORDER BY ws.date DESC, s.createdAt DESC
+        LIMIT 1
+    """)
+    suspend fun lastSetForExerciseVariant(exerciseId: String, variantId: String?): WorkoutSetWithSessionDate?
     @Query("SELECT we.* FROM workout_exercises we WHERE we.exerciseId=:exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId=:variantId) ORDER BY we.createdAt DESC LIMIT 1") suspend fun lastWorkoutExerciseForVariant(exerciseId: String, variantId: String?): WorkoutExerciseEntity?
     @Query("SELECT COUNT(*) FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.exerciseId=:exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId=:variantId)") suspend fun countSetsForExerciseVariant(exerciseId: String, variantId: String?): Int
 

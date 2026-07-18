@@ -81,7 +81,7 @@ class WorkoutRepository(private val context: Context, val dao: WorkoutDao = AppD
         return json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(TemplateExerciseItem.serializer()), template.exercisesJson)
     }
 
-    suspend fun getLastSetForVariant(exerciseId: String, variantId: String?): WorkoutSetEntity? {
+    suspend fun getLastSetForVariant(exerciseId: String, variantId: String?): WorkoutSetWithSessionDate? {
         return dao.lastSetForExerciseVariant(exerciseId, variantId)
     }
 

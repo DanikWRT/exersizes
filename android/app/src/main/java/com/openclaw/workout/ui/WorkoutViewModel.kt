@@ -306,7 +306,9 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     fun exactSets(exerciseId: String, variantId: String?) = repo.dao.exactVariantSets(exerciseId, variantId)
     fun variants(exerciseId: String) = repo.dao.variants(exerciseId)
 
-    fun getExerciseName(id: String): String = _state.value.exercises.find { it.id == id }?.name ?: id.take(8)
+    suspend fun getLastSetForVariant(exerciseId: String, variantId: String?): WorkoutSetWithSessionDate? {
+        return repo.dao.lastSetForExerciseVariant(exerciseId, variantId)
+    }    fun getExerciseName(id: String): String = _state.value.exercises.find { it.id == id }?.name ?: id.take(8)
     fun getVariantName(variantId: String?): String {
         if (variantId == null) return "Базовый"
         return _state.value.variants.find { it.id == variantId }?.name ?: "—"

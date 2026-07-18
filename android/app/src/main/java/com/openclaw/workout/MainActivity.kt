@@ -43,6 +43,16 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
+// PATCH-9: format session date (yyyy-MM-dd) as dd.MM for charts
+fun formatSessionDate(sessionDate: String): String = try {
+    java.time.LocalDate.parse(sessionDate, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE).format(java.time.format.DateTimeFormatter.ofPattern("dd.MM"))
+} catch (e: Exception) {
+    sessionDate
+}
+
+// PATCH-9: sort sets by session date so backdated sessions appear in chronological order
+fun List<WorkoutSetWithSessionDate>.sortedBySessionDate(): List<WorkoutSetWithSessionDate> = sortedBy { it.sessionDate }
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
@@ -785,6 +795,7 @@ class MainActivity : ComponentActivity() {
     }
     val variants by vm.variants(exerciseId).collectAsState(emptyList())
     val sets by vm.exactSets(exerciseId, selectedVariantId).collectAsState(emptyList())
+    val sortedSets = remember(sets) { sets.sortedBySessionDate() }
 
     Scaffold(
         topBar = {
@@ -821,10 +832,10 @@ class MainActivity : ComponentActivity() {
                 }
                 Spacer(Modifier.height(8.dp))
 
-                if (sets.isNotEmpty()) {
+                if (sortedSets.isNotEmpty()) {
                     Text("Динамика веса и повторений", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
-                    ChartCard(sets)
+                    ChartCard(sortedSets)
                     Spacer(Modifier.height(12.dp))
                     Text("Последние тренировки", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -835,9 +846,9 @@ class MainActivity : ComponentActivity() {
                     }
                     Divider()
                     LazyColumn {
-                        items(sets.takeLast(20)) { set ->
+                        items(sortedSets.takeLast(20)) { set ->
                             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                val dateStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(set.createdAt))
+                                val dateStr = set.sessionDate
                                 Text(dateStr, modifier = Modifier.weight(1.5f))
                                 Text("${set.weight}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                                 Text("${set.reps}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
@@ -854,13 +865,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable fun ChartCard(sets: List<WorkoutSetEntity>) {
+@Composable fun ChartCard(sets: List<WorkoutSetWithSessionDate>) {
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(Modifier.padding(16.dp)) {
             val weights = sets.map { it.weight }
             val reps = sets.map { it.reps.toDouble() }
             val avg = sets.map { (it.weight + it.reps) / 2.0 }
-            val dates = sets.map { java.text.SimpleDateFormat("dd.MM", java.util.Locale.getDefault()).format(java.util.Date(it.createdAt)) }
+            val dates = sets.map { formatSessionDate(it.sessionDate) }
             SimpleChart(weights, reps, avg, dates)
             Spacer(Modifier.height(8.dp))
             ChartLegend()

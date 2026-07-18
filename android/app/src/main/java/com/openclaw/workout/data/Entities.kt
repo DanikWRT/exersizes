@@ -59,6 +59,15 @@ enum class MediaType { image, gif, video, external_url }
     val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true
 )
 
+// PATCH-9: projection used by JOIN queries that need session date instead of createdAt
+@Serializable data class WorkoutSetWithSessionDate(
+    val id: String, val workoutExerciseId: String, val setIndex: Int, val weight: Double = 0.0, val reps: Int = 0,
+    val notes: String = "", val isWarmup: Boolean = false, val isCompleted: Boolean = false,
+    val completedAt: Long? = null,
+    val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true,
+    val sessionDate: String
+)
+
 @Entity(tableName = "workout_set_segments", indices = [Index("workoutSetId")])
 @Serializable data class WorkoutSetSegmentEntity(@PrimaryKey val id: String = uuid(), val workoutSetId: String, val segmentIndex: Int = 0, val weight: Double = 0.0, val reps: Int = 0, val notes: String = "", val type: SegmentType = SegmentType.main)
 
