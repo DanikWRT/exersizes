@@ -25,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -814,7 +817,11 @@ class MainActivity : ComponentActivity() {
         Column(Modifier.padding(16.dp)) {
             val weights = sets.map { it.weight }
             val reps = sets.map { it.reps.toDouble() }
-            SimpleChart(weights, reps)
+            val avg = sets.map { (it.weight + it.reps) / 2.0 }
+            val dates = sets.map { java.text.SimpleDateFormat("dd.MM", java.util.Locale.getDefault()).format(java.util.Date(it.createdAt)) }
+            SimpleChart(weights, reps, avg, dates)
+            Spacer(Modifier.height(8.dp))
+            ChartLegend()
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -834,23 +841,67 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable fun SimpleChart(weights: List<Double>, reps: List<Double>) {
-    Canvas(Modifier.fillMaxWidth().height(160.dp)) {
-        fun drawSeries(vals: List<Double>, color: Color) {
-            if (vals.size < 2) return
+@Composable fun ChartLegend() {
+    fun legendItem(color: Color, text: String): @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(10.dp).background(color, shape = RoundedCornerShape(50)))
+            Spacer(Modifier.width(4.dp))
+            Text(text, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        legendItem(Color(0xFF2196F3), "Вес (кг)")()
+        legendItem(Color(0xFFF44336), "Повторения")()
+        legendItem(Color(0xFF4CAF50), "Среднее")()
+    }
+}
+
+@Composable fun SimpleChart(weights: List<Double>, reps: List<Double>, avg: List<Double>, dates: List<String>) {
+    val gridColor = Color.Gray.copy(alpha = 0.3f)
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Canvas(Modifier.fillMaxWidth().height(180.dp)) {
+        val padLeft = 0f
+        val padBottom = 28f
+        val chartH = size.height - padBottom
+        val w = size.width - padLeft
+        val count = weights.size
+        if (count < 2) return@Canvas
+
+        fun drawSeries(vals: List<Double>, color: Color, stroke: Float) {
             val max = (vals.maxOrNull() ?: 1.0).coerceAtLeast(1.0)
-            val w = size.width
-            val h = size.height
             vals.zipWithNext().forEachIndexed { i, (a, b) ->
-                val x1 = i * w / (vals.size - 1)
-                val x2 = (i + 1) * w / (vals.size - 1)
-                val y1 = h - (a / max * h).toFloat()
-                val y2 = h - (b / max * h).toFloat()
-                drawLine(color, Offset(x1, y1), Offset(x2, y2), 4f)
+                val x1 = padLeft + i * w / (count - 1)
+                val x2 = padLeft + (i + 1) * w / (count - 1)
+                val y1 = chartH - (a / max * chartH).toFloat()
+                val y2 = chartH - (b / max * chartH).toFloat()
+                drawLine(color, Offset(x1, y1), Offset(x2, y2), stroke)
             }
         }
-        drawSeries(weights, Color.Blue)
-        drawSeries(reps, Color.Red)
+
+        // vertical grid lines
+        val steps = (count - 1).coerceAtMost(6)
+        for (i in 0..steps) {
+            val x = padLeft + i * w / steps
+            drawLine(gridColor, Offset(x, 0f), Offset(x, chartH), 1f)
+        }
+
+        drawSeries(weights, Color(0xFF2196F3), 4f)
+        drawSeries(reps, Color(0xFFF44336), 4f)
+        drawSeries(avg, Color(0xFF4CAF50), 4f)
+
+        // dates under x-axis
+        val labelStep = (count / 7).coerceAtLeast(1)
+        val paint = android.graphics.Paint().apply {
+            this.color = textColor.toArgb()
+            alpha = 180
+            textSize = 24f
+            isAntiAlias = true
+        }
+        dates.filterIndexed { index, _ -> index % labelStep == 0 || index == count - 1 }.take(7).forEachIndexed { idx, date ->
+            val i = (idx * labelStep).coerceAtMost(count - 1)
+            val x = padLeft + i * w / (count - 1)
+            drawContext.canvas.nativeCanvas.drawText(date, x, size.height - 4f, paint)
+        }
     }
 }
 
