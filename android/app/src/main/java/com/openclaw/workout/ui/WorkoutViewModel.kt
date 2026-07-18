@@ -232,7 +232,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // PATCH-6/7: Exercise editing
+    // PATCH-6/7: Exercise editing — PATCH-10: no auto "Базовый" when variantName blank
     fun addExercise(name: String, group: String, strategy: WeightStrategy, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)

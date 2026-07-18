@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
             composable("reports") { ReportsScreen(vm, nav) }
             composable("report_exercise/{exerciseId}") { entry ->
                 val eid = entry.arguments?.getString("exerciseId") ?: ""
-                ReportExerciseScreen(vm, eid)
+                ReportExerciseScreen(vm, nav, eid)
             }
             composable("exercises") { ExercisesScreen(vm) }
             composable("settings") { SettingsScreen(vm) }
@@ -361,19 +361,20 @@ class MainActivity : ComponentActivity() {
                     }
                     s.selectedExercise?.let { ex ->
                         Spacer(Modifier.height(8.dp))
+                        // PATCH-10: distinct variant names + always offer "Базовый" first
                         Text("Варианты:", fontWeight = FontWeight.Bold)
                         LazyRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            items(s.variants.distinctBy { it.name }) { v ->
-                                AssistChip(onClick = {
-                                    vm.addExerciseToPlan(ex.id, v.id)
-                                    showExercisePicker = false
-                                }, label = { Text(v.name) })
-                            }
                             item {
                                 AssistChip(onClick = {
                                     vm.addExerciseToPlan(ex.id, null)
                                     showExercisePicker = false
                                 }, label = { Text("Базовый") })
+                            }
+                            items(s.variants.distinctBy { it.name }) { v ->
+                                AssistChip(onClick = {
+                                    vm.addExerciseToPlan(ex.id, v.id)
+                                    showExercisePicker = false
+                                }, label = { Text(v.name) })
                             }
                         }
                     }
@@ -662,93 +663,35 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ===================== REPORTS SCREEN (PATCH-5) =====================
+// ===================== REPORTS SCREEN (PATCH-10) =====================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun ReportsScreen(vm: WorkoutViewModel, nav: NavHostController) {
     val s by vm.state.collectAsState()
-    var selectedExercise by remember { mutableStateOf<ExerciseEntity?>(null) }
-    var selectedVariantId by remember { mutableStateOf<String?>(null) }
-    var showExercisePicker by remember { mutableStateOf(false) }
-    var showVariantPicker by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-
-    val selectedExId = selectedExercise?.id ?: "__none__"
-    val variants by vm.variants(selectedExId).collectAsState(emptyList())
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Отчёты", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
 
-        // Exercise selector
         OutlinedTextField(
-            value = selectedExercise?.name ?: "",
-            onValueChange = { },
-            label = { Text("Упражнение") },
-            modifier = Modifier.fillMaxWidth().clickable { showExercisePicker = true },
-            readOnly = true,
+            value = query, onValueChange = { query = it },
+            label = { Text("Поиск") },
+            modifier = Modifier.fillMaxWidth(),
             trailingIcon = { Icon(Icons.Default.Search, null) }
         )
         Spacer(Modifier.height(8.dp))
 
-        // Variant selector
-        if (selectedExercise != null && variants.size > 1) {
-            OutlinedTextField(
-                value = variants.find { it.id == selectedVariantId }?.name ?: "Базовый",
-                onValueChange = { },
-                label = { Text("Вариант") },
-                modifier = Modifier.fillMaxWidth().clickable { showVariantPicker = true },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        selectedExercise?.let { ex ->
-            val sets by vm.exactSets(ex.id, selectedVariantId).collectAsState(emptyList())
-            if (sets.isNotEmpty()) {
-                Text("Динамика веса и повторений", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                ChartCard(sets)
-                Spacer(Modifier.height(12.dp))
-                Text("Последние тренировки", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                // Table header
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Дата", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1.5f))
-                    Text("Вес", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                    Text("Повторы", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                    Text("Статус", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-                }
-                Divider()
-                LazyColumn {
-                    items(sets.takeLast(20)) { set ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            val dateStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(set.createdAt))
-                            Text(dateStr, modifier = Modifier.weight(1.5f))
-                            Text("${set.weight}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            Text("${set.reps}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            if (set.isCompleted) Text("✓", color = Color(0xFF4CAF50), modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-                            else Text("—", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-                        }
-                    }
+        val filtered = s.exercises.filter { it.name.contains(query, true) || it.muscleGroup.contains(query, true) }
+        LazyColumn(Modifier.weight(1f)) {
+            if (filtered.isEmpty()) {
+                item {
+                    Text("Ничего не найдено", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp))
                 }
             } else {
-                Text("Нет данных для этого упражнения/варианта", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        } ?: run {
-            // Show list of all exercises with search/filter
-            OutlinedTextField(
-                value = query, onValueChange = { query = it },
-                label = { Text("Поиск упражнения") },
-                modifier = Modifier.fillMaxWidth(),
-                trailingIcon = { Icon(Icons.Default.Search, null) }
-            )
-            Spacer(Modifier.height(8.dp))
-            val filtered = s.exercises.filter { it.name.contains(query, true) || it.muscleGroup.contains(query, true) }
-            LazyColumn(Modifier.weight(1f)) {
                 items(filtered) { ex ->
                     Card(
                         Modifier.fillMaxWidth().padding(vertical = 2.dp).clickable {
-                            selectedExercise = ex; selectedVariantId = null
+                            nav.navigate("report_exercise/${ex.id}")
                         }
                     ) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -763,69 +706,28 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    if (showExercisePicker) {
-        AlertDialog(
-            onDismissRequest = { showExercisePicker = false },
-            title = { Text("Выбрать упражнение") },
-            text = {
-                Column {
-                    var q by remember { mutableStateOf("") }
-                    OutlinedTextField(value = q, onValueChange = { q = it }, label = { Text("Поиск") }, modifier = Modifier.fillMaxWidth())
-                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
-                        val filtered = s.exercises.filter { it.name.contains(q, true) }
-                        items(filtered) { ex ->
-                            Card(Modifier.fillMaxWidth().padding(2.dp).clickable {
-                                selectedExercise = ex; selectedVariantId = null; showExercisePicker = false
-                            }) { Column(Modifier.padding(8.dp)) { Text(ex.name, fontWeight = FontWeight.Bold); Text(ex.muscleGroup, style = MaterialTheme.typography.bodySmall) } }
-                        }
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showExercisePicker = false }) { Text("Закрыть") } }
-        )
-    }
-
-    if (showVariantPicker) {
-        AlertDialog(
-            onDismissRequest = { showVariantPicker = false },
-            title = { Text("Выбрать вариант") },
-            text = {
-                Column {
-                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
-                        item {
-                            Card(Modifier.fillMaxWidth().padding(2.dp).clickable { selectedVariantId = null; showVariantPicker = false }) {
-                                Text("Базовый", Modifier.padding(8.dp))
-                            }
-                        }
-                        items(variants) { v ->
-                            Card(Modifier.fillMaxWidth().padding(2.dp).clickable { selectedVariantId = v.id; showVariantPicker = false }) {
-                                Text(v.name, Modifier.padding(8.dp))
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showVariantPicker = false }) { Text("Закрыть") } }
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun ReportExerciseScreen(vm: WorkoutViewModel, exerciseId: String) {
+@Composable fun ReportExerciseScreen(vm: WorkoutViewModel, nav: NavHostController, exerciseId: String) {
     val s by vm.state.collectAsState()
     var selectedVariantId by remember { mutableStateOf<String?>(null) }
 
     val selectedExercise = remember(exerciseId, s.exercises) {
         s.exercises.find { it.id == exerciseId }
     }
-    val selectedExId = selectedExercise?.id ?: "__none__"
-    val variants by vm.variants(selectedExId).collectAsState(emptyList())
+    val variants by vm.variants(exerciseId).collectAsState(emptyList())
+    val sets by vm.exactSets(exerciseId, selectedVariantId).collectAsState(emptyList())
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(selectedExercise?.name ?: "Отчёт") }
+                title = { Text(selectedExercise?.name ?: "Отчёт") },
+                navigationIcon = {
+                    IconButton(onClick = { nav.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, "Назад")
+                    }
+                }
             )
         }
     ) { padding ->
@@ -833,32 +735,25 @@ class MainActivity : ComponentActivity() {
             if (selectedExercise == null) {
                 Text("Упражнение не найдено", color = MaterialTheme.colorScheme.error)
             } else {
-                if (variants.size > 1) {
-                    OutlinedTextField(
-                        value = variants.find { it.id == selectedVariantId }?.name ?: "Базовый",
-                        onValueChange = { },
-                        label = { Text("Вариант") },
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    LazyColumn(Modifier.heightIn(max = 120.dp)) {
-                        item {
-                            Card(Modifier.fillMaxWidth().padding(2.dp).clickable { selectedVariantId = null }) {
-                                Text("Базовый", Modifier.padding(8.dp))
-                            }
-                        }
-                        items(variants) { v ->
-                            Card(Modifier.fillMaxWidth().padding(2.dp).clickable { selectedVariantId = v.id }) {
-                                Text(v.name, Modifier.padding(8.dp))
-                            }
-                        }
+                // Variant chips: "Базовый" + existing variants
+                LazyRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    item {
+                        FilterChip(
+                            selected = selectedVariantId == null,
+                            onClick = { selectedVariantId = null },
+                            label = { Text("Базовый") }
+                        )
                     }
-                    Spacer(Modifier.height(8.dp))
+                    items(variants) { v ->
+                        FilterChip(
+                            selected = selectedVariantId == v.id,
+                            onClick = { selectedVariantId = v.id },
+                            label = { Text(v.name) }
+                        )
+                    }
                 }
+                Spacer(Modifier.height(8.dp))
 
-                val sets by vm.exactSets(selectedExercise.id, selectedVariantId).collectAsState(emptyList())
                 if (sets.isNotEmpty()) {
                     Text("Динамика веса и повторений", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
@@ -885,7 +780,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 } else {
-                    Text("Нет данных для этого упражнения/варианта", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Нет данных", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
