@@ -1466,25 +1466,60 @@ private fun setSegmentSummary(segments: List<WorkoutSetSegmentEntity>): String {
         Spacer(Modifier.height(16.dp))
         Text("Экспорт / Импорт данных", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        Button(onClick = vm::exportData, modifier = Modifier.fillMaxWidth()) { Text("Экспорт JSON") }
-        if (s.exportText.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(value = s.exportText, onValueChange = {}, label = { Text("Экспорт") }, modifier = Modifier.fillMaxWidth().height(120.dp), readOnly = true, colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ))
+
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val backupPath = "/storage/emulated/0/Download/workout_backup.json"
+        var showImportConfirm by remember { mutableStateOf(false) }
+        var showExportInfo by remember { mutableStateOf(false) }
+
+        Button(
+            onClick = {
+                vm.exportToFile(backupPath)
+                showExportInfo = true
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("📤 Экспорт данных") }
+
+        Button(
+            onClick = { showImportConfirm = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ) { Text("📥 Импорт данных") }
+
+        if (showImportConfirm) {
+            AlertDialog(
+                onDismissRequest = { showImportConfirm = false },
+                title = { Text("Импорт данных") },
+                text = { Text("Текущие данные будут заменены. Продолжить?\n\nФайл: $backupPath") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            vm.importFromFile(backupPath)
+                            showImportConfirm = false
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) { Text("Продолжить") }
+                },
+                dismissButton = { TextButton(onClick = { showImportConfirm = false }) { Text("Отмена") } }
+            )
         }
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(value = importText, onValueChange = { importText = it }, label = { Text("Вставьте JSON для импорта") }, modifier = Modifier.fillMaxWidth().height(120.dp), colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ))
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = { vm.importData(importText) }, modifier = Modifier.fillMaxWidth()) { Text("Импорт") }
-        if (s.message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(s.message, color = MaterialTheme.colorScheme.primary) }
+
+        if (showExportInfo) {
+            AlertDialog(
+                onDismissRequest = { showExportInfo = false },
+                title = { Text("Экспорт завершён") },
+                text = { Text("Файл сохранён:\n$backupPath") },
+                confirmButton = { TextButton(onClick = { showExportInfo = false }) { Text("OK") } }
+            )
+        }
+
+        if (s.message.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text(s.message, color = MaterialTheme.colorScheme.primary)
+            LaunchedEffect(s.message) {
+                kotlinx.coroutines.delay(3000)
+                android.widget.Toast.makeText(context, s.message, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

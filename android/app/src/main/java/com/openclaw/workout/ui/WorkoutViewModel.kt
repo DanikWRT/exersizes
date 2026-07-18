@@ -311,6 +311,29 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { repo.importJson(text) }.onSuccess { _state.update { it.copy(message = "Импорт завершён") } }.onFailure { e -> _state.update { it.copy(message = "Ошибка импорта: ${e.message}") } }
     }
 
+    fun exportToFile(path: String) = viewModelScope.launch {
+        runCatching {
+            val json = repo.exportJson()
+            java.io.File(path).apply {
+                parentFile?.mkdirs()
+                writeText(json, Charsets.UTF_8)
+            }
+            _state.update { it.copy(message = "Данные экспортированы") }
+        }.onFailure { e ->
+            _state.update { it.copy(message = "Ошибка экспорта: ${e.message}") }
+        }
+    }
+
+    fun importFromFile(path: String) = viewModelScope.launch {
+        runCatching {
+            val text = java.io.File(path).readText(Charsets.UTF_8)
+            repo.importJson(text)
+            _state.update { it.copy(message = "Данные восстановлены") }
+        }.onFailure { e ->
+            _state.update { it.copy(message = "Ошибка импорта: ${e.message}") }
+        }
+    }
+
     fun sets(workoutExerciseId: String) = repo.dao.sets(workoutExerciseId)
     fun segments(setId: String) = repo.dao.segments(setId)
     fun exactSets(exerciseId: String, variantId: String?) = repo.dao.exactVariantSets(exerciseId, variantId)
