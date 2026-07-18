@@ -237,19 +237,17 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         repo.dao.updateSetWeightReps(setId, weight, reps)
     }
 
-    fun addSupplementalSet(workoutExerciseId: String, weight: Double, reps: Int) = viewModelScope.launch {
-        val existing = repo.dao.setsOnce(workoutExerciseId)
-        val nextIndex = existing.maxOfOrNull { it.setIndex }?.plus(1) ?: 0
-        val supplemental = WorkoutSetEntity(
-            workoutExerciseId = workoutExerciseId,
-            setIndex = nextIndex,
+    fun addSegment(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
+        val existing = repo.dao.segmentsOnce(setId)
+        val nextIndex = existing.maxOfOrNull { it.segmentIndex }?.plus(1) ?: 0
+        val segment = WorkoutSetSegmentEntity(
+            workoutSetId = setId,
+            segmentIndex = nextIndex,
             weight = weight,
             reps = reps,
-            isSupplemental = true,
-            isCompleted = true,
-            completedAt = now()
+            type = SegmentType.supplemental
         )
-        repo.dao.upsertSet(supplemental)
+        repo.dao.upsertSegment(segment)
     }
 
     fun updateRestSeconds(workoutExerciseId: String, seconds: Int) = viewModelScope.launch {

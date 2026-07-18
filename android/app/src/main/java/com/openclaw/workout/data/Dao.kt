@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM workout_sets") suspend fun allSetsOnce(): List<WorkoutSetEntity>
     @Query("SELECT * FROM workout_sets WHERE id=:id") suspend fun setById(id: String): WorkoutSetEntity?
     @Query("SELECT * FROM workout_set_segments WHERE workoutSetId=:setId ORDER BY segmentIndex") fun segments(setId: String): Flow<List<WorkoutSetSegmentEntity>>
+    @Query("SELECT * FROM workout_set_segments WHERE workoutSetId=:setId ORDER BY segmentIndex") suspend fun segmentsOnce(setId: String): List<WorkoutSetSegmentEntity>
     @Query("SELECT * FROM workout_set_segments") suspend fun allSegmentsOnce(): List<WorkoutSetSegmentEntity>
     @Query("SELECT * FROM workout_blocks") suspend fun allBlocksOnce(): List<WorkoutBlockEntity>
     @Query("SELECT * FROM related_exercises") suspend fun allRelatedOnce(): List<RelatedExerciseEntity>

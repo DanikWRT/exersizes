@@ -8,7 +8,7 @@ fun uuid(): String = UUID.randomUUID().toString()
 fun now(): Long = System.currentTimeMillis()
 
 enum class SyncStatus { SYNCED, DIRTY, DELETED }
-enum class SegmentType { main, drop, burn, partial }
+enum class SegmentType { main, drop, burn, partial, supplemental }
 enum class RelationType { same_muscle, alternative, same_machine, different_grip, variation }
 enum class MediaType { image, gif, video, external_url }
 
