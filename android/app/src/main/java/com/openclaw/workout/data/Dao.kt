@@ -108,6 +108,9 @@ import kotlinx.coroutines.flow.Flow
     // PATCH-5: reopen completed session
     @Query("UPDATE workout_sessions SET finishedAt=NULL, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun reopenSession(id: String, ts: Long = now())
 
+    @Query("UPDATE workout_sets SET weight=:weight, reps=:reps, updatedAt=:updated WHERE id=:setId")
+    suspend fun updateSetWeightReps(setId: String, weight: Double, reps: Int, updated: Long = now())
+
     @Query("UPDATE workout_sets SET isCompleted=1, completedAt=:ts, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun completeSet(id: String, ts: Long = now())
     @Query("UPDATE exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExerciseRest(id: String, seconds: Int, ts: Long = now())
     @Query("UPDATE exercise_variants SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateVariantRest(id: String, seconds: Int, ts: Long = now())

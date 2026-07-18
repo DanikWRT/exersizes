@@ -56,6 +56,7 @@ enum class MediaType { image, gif, video, external_url }
     @PrimaryKey val id: String = uuid(), val workoutExerciseId: String, val setIndex: Int, val weight: Double = 0.0, val reps: Int = 0,
     val notes: String = "", val isWarmup: Boolean = false, val isCompleted: Boolean = false,
     val completedAt: Long? = null,
+    val isSupplemental: Boolean = false,
     val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true
 )
 

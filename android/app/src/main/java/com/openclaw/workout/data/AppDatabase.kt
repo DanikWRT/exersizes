@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [ExerciseEntity::class, ExerciseVariantEntity::class, ExerciseAliasEntity::class, RelatedExerciseEntity::class, WorkoutSessionEntity::class, WorkoutBlockEntity::class, WorkoutExerciseEntity::class, WorkoutSetEntity::class, WorkoutSetSegmentEntity::class, ExerciseMediaEntity::class, WorkoutTemplateEntity::class, AppSettingEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -27,9 +27,14 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_unique ON exercise_variants(exerciseId, name)")
             }
         }
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE workout_sets ADD COLUMN isSupplemental INTEGER NOT NULL DEFAULT 0")
+            }
+        }
         fun get(context: Context): AppDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "workout-offline.db")
-                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .build().also { INSTANCE = it }
         }
     }
