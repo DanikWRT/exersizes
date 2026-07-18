@@ -596,69 +596,89 @@ fun WeightRepsInput(
     var weightText by remember(weight) { mutableStateOf(formatDoubleOneDecimal(weight)) }
     var repsText by remember(reps) { mutableStateOf(reps.toString()) }
 
-    Column(modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         // Weight
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Вес: ", fontWeight = FontWeight.Medium)
-            IconButton(onClick = {
-                val new = (weight - 0.5).coerceAtLeast(0.0)
-                onWeightChange(new)
-                weightText = formatDoubleOneDecimal(new)
-            }) { Icon(Icons.Default.Remove, "Меньше") }
-            OutlinedTextField(
-                value = weightText,
-                onValueChange = {
-                    weightText = it
-                    it.toDoubleOrNull()?.let(onWeightChange)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier.width(80.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Вес, кг", style = MaterialTheme.typography.labelSmall)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                IconButton(
+                    onClick = {
+                        val new = (weight - 0.5).coerceAtLeast(0.0)
+                        onWeightChange(new)
+                        weightText = formatDoubleOneDecimal(new)
+                    },
+                    modifier = Modifier.size(36.dp)
+                ) { Icon(Icons.Default.Remove, "Меньше", modifier = Modifier.size(18.dp)) }
+                OutlinedTextField(
+                    value = weightText,
+                    onValueChange = {
+                        weightText = it
+                        it.toDoubleOrNull()?.let(onWeightChange)
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    modifier = Modifier.width(56.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            IconButton(onClick = {
-                val new = weight + 0.5
-                onWeightChange(new)
-                weightText = formatDoubleOneDecimal(new)
-            }) { Icon(Icons.Default.Add, "Больше") }
-            Text(" кг", fontWeight = FontWeight.Medium)
+                IconButton(
+                    onClick = {
+                        val new = weight + 0.5
+                        onWeightChange(new)
+                        weightText = formatDoubleOneDecimal(new)
+                    },
+                    modifier = Modifier.size(36.dp)
+                ) { Icon(Icons.Default.Add, "Больше", modifier = Modifier.size(18.dp)) }
+            }
         }
+
         // Reps
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Повторы: ", fontWeight = FontWeight.Medium)
-            IconButton(onClick = {
-                val new = (reps - 1).coerceAtLeast(0)
-                onRepsChange(new)
-                repsText = new.toString()
-            }) { Icon(Icons.Default.Remove, "Меньше") }
-            OutlinedTextField(
-                value = repsText,
-                onValueChange = {
-                    repsText = it
-                    it.toIntOrNull()?.let(onRepsChange)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                modifier = Modifier.width(64.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Повторы", style = MaterialTheme.typography.labelSmall)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                IconButton(
+                    onClick = {
+                        val new = (reps - 1).coerceAtLeast(0)
+                        onRepsChange(new)
+                        repsText = new.toString()
+                    },
+                    modifier = Modifier.size(36.dp)
+                ) { Icon(Icons.Default.Remove, "Меньше", modifier = Modifier.size(18.dp)) }
+                OutlinedTextField(
+                    value = repsText,
+                    onValueChange = {
+                        repsText = it
+                        it.toIntOrNull()?.let(onRepsChange)
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.width(48.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            IconButton(onClick = {
-                val new = reps + 1
-                onRepsChange(new)
-                repsText = new.toString()
-            }) { Icon(Icons.Default.Add, "Больше") }
+                IconButton(
+                    onClick = {
+                        val new = reps + 1
+                        onRepsChange(new)
+                        repsText = new.toString()
+                    },
+                    modifier = Modifier.size(36.dp)
+                ) { Icon(Icons.Default.Add, "Больше", modifier = Modifier.size(18.dp)) }
+            }
         }
     }
 }
@@ -885,8 +905,8 @@ fun WeightRepsInput(
             ) { Text("Старт", fontSize = 24.sp, fontWeight = FontWeight.Bold) }
         }
 
-        // FEATURE-4: supplemental segments input (only when a set is complete / after set finished)
-        if ((allDone || !isSetInProgress) && !restActive && sets.isNotEmpty()) {
+        // FEATURE-4: supplemental segments input (only after a set is completed, not before starting)
+        if (sets.any { it.isCompleted } && !isSetInProgress && !restActive) {
             Spacer(Modifier.height(8.dp))
             if (showSupplementalInput) {
                 Card(
@@ -906,6 +926,7 @@ fun WeightRepsInput(
                                 onClick = {
                                     if (supplementalSetId.isNotBlank()) {
                                         vm.addSegment(supplementalSetId, supplementalWeight, supplementalReps)
+                                        // НЕ закрываем — можно добавить ещё сегментов
                                     }
                                 },
                                 modifier = Modifier.weight(1f)
@@ -920,10 +941,10 @@ fun WeightRepsInput(
             } else {
                 OutlinedButton(
                     onClick = {
-                        val mainSet = sets.lastOrNull { !it.isSupplemental }
-                        mainSet?.let {
+                        val lastCompleted = sets.lastOrNull { it.isCompleted }
+                        lastCompleted?.let {
                             supplementalSetId = it.id
-                            supplementalWeight = it.weight
+                            supplementalWeight = kotlin.math.max(0.0, it.weight - 5.0)
                             supplementalReps = it.reps
                             showSupplementalInput = true
                         }
