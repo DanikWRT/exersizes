@@ -28,32 +28,17 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM workout_sets") suspend fun allSetsOnce(): List<WorkoutSetEntity>
     @Query("SELECT * FROM workout_sets WHERE id=:id") suspend fun setById(id: String): WorkoutSetEntity?
     @Query("SELECT * FROM workout_set_segments WHERE workoutSetId=:setId ORDER BY segmentIndex") fun segments(setId: String): Flow<List<WorkoutSetSegmentEntity>>
-    @Query("SELECT * FROM workout_set_segments WHERE workoutSetId=:setId ORDER BY segmentIndex") suspend fun segmentsOnce(setId: String): List<WorkoutSetSegmentEntity>
-
-    // PATCH-12: update main segment weight/reps; if no main segment exists, create it
-    @Transaction
-    suspend fun updateSetWeightReps(setId: String, weight: Double, reps: Int) {
-        val mainSeg = segmentsOnce(setId).find { !it.isSupplemental }
-        if (mainSeg == null) {
-            upsertSegment(WorkoutSetSegmentEntity(workoutSetId = setId, segmentIndex = 0, weight = weight, reps = reps, type = SegmentType.main, isSupplemental = false))
-        } else {
-            upsertSegment(mainSeg.copy(weight = weight, reps = reps))
-        }
-    }
-
     @Query("SELECT * FROM workout_set_segments") suspend fun allSegmentsOnce(): List<WorkoutSetSegmentEntity>
     @Query("SELECT * FROM workout_blocks") suspend fun allBlocksOnce(): List<WorkoutBlockEntity>
     @Query("SELECT * FROM related_exercises") suspend fun allRelatedOnce(): List<RelatedExerciseEntity>
     @Query("SELECT * FROM exercise_media") suspend fun allMediaOnce(): List<ExerciseMediaEntity>
 
     @Query("SELECT * FROM workout_exercises WHERE exerciseId=:exerciseId AND ((:variantId IS NULL AND variantId IS NULL) OR variantId=:variantId) AND id != :exclude ORDER BY createdAt DESC LIMIT 1") suspend fun lastExactWorkoutExercise(exerciseId: String, variantId: String?, exclude: String = ""): WorkoutExerciseEntity?
-    // PATCH-12: queries now join segments for main segment weight/reps
     @Query("""
         SELECT s.*, ws.date as sessionDate
         FROM workout_sets s
         INNER JOIN workout_exercises we ON we.id = s.workoutExerciseId
         INNER JOIN workout_sessions ws ON ws.id = we.sessionId
-        INNER JOIN workout_set_segments seg ON seg.workoutSetId = s.id AND seg.isSupplemental = 0
         WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId)
         ORDER BY ws.date, s.createdAt
     """)
@@ -63,7 +48,6 @@ import kotlinx.coroutines.flow.Flow
         FROM workout_sets s
         INNER JOIN workout_exercises we ON we.id = s.workoutExerciseId
         INNER JOIN workout_sessions ws ON ws.id = we.sessionId
-        INNER JOIN workout_set_segments seg ON seg.workoutSetId = s.id AND seg.isSupplemental = 0
         WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId)
         ORDER BY ws.date DESC, s.createdAt DESC
         LIMIT 1
@@ -124,7 +108,6 @@ import kotlinx.coroutines.flow.Flow
     // PATCH-5: reopen completed session
     @Query("UPDATE workout_sessions SET finishedAt=NULL, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun reopenSession(id: String, ts: Long = now())
 
-    @Query("UPDATE workout_sets SET weight=:weight, reps=:reps, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateSetWeightReps(id: String, weight: Double, reps: Int, ts: Long = now())
     @Query("UPDATE workout_sets SET isCompleted=1, completedAt=:ts, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun completeSet(id: String, ts: Long = now())
     @Query("UPDATE exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExerciseRest(id: String, seconds: Int, ts: Long = now())
     @Query("UPDATE exercise_variants SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateVariantRest(id: String, seconds: Int, ts: Long = now())

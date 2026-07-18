@@ -41,8 +41,7 @@ data class ViewSessionExercise(
     val workoutExercise: WorkoutExerciseEntity,
     val exerciseName: String,
     val variantName: String,
-    val sets: List<WorkoutSetEntity>,
-    val segments: Map<String, List<WorkoutSetSegmentEntity>> = emptyMap()
+    val sets: List<WorkoutSetEntity>
 )
 
 class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
@@ -161,6 +160,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // PATCH-3: load template into plan editor
+    // FEATURE-2: auto-fill from history (falls back to template values when no history)
     fun loadTemplateIntoPlan(templateId: String) = viewModelScope.launch {
         val items = repo.loadTemplateAsPlan(templateId) ?: return@launch
         val planItems = items.map { tpl ->
@@ -168,10 +168,19 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
             val vName = _state.value.exercises.find { it.id == tpl.exerciseId }?.let { ex ->
                 repo.dao.variants(ex.id).first().find { it.id == tpl.variantId }?.name
             } ?: (tpl.variantId?.let { repo.dao.variantById(it)?.name } ?: "Базовый")
+
+            // FEATURE-2: last real weight/sets/rest from history
+            val lastSet = repo.getLastSetForVariant(tpl.exerciseId, tpl.variantId)
+            val lastWe = repo.getLastWorkoutExerciseForVariant(tpl.exerciseId, tpl.variantId)
+            val lastSetsCount = lastWe?.let { repo.dao.setsOnce(it.id).size } ?: tpl.sets
+
             PlanExerciseItem(
                 exerciseId = tpl.exerciseId, exerciseName = exName,
                 variantId = tpl.variantId, variantName = vName,
-                weight = tpl.weight, reps = tpl.reps, sets = tpl.sets, restSeconds = tpl.restSeconds
+                weight = lastSet?.weight ?: tpl.weight,
+                reps = lastSet?.reps ?: tpl.reps,
+                sets = lastSetsCount.coerceAtLeast(1),
+                restSeconds = lastWe?.restSeconds ?: tpl.restSeconds
             )
         }
         _state.update { it.copy(planExercises = planItems) }
@@ -199,7 +208,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         repo.dao.workoutExercises(sessionId).collect { w -> _state.update { it.copy(workoutExercises = w) } }
     }
 
-    // PATCH-4: load session for view with segments
+    // PATCH-4: load session for view
     fun loadSessionForView(sessionId: String) = viewModelScope.launch {
         val session = repo.dao.session(sessionId) ?: return@launch
         val wes = repo.dao.workoutExercisesOnce(sessionId)
@@ -210,8 +219,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
                     ?: repo.dao.variantById(vid)?.name ?: "—"
             } ?: "Базовый"
             val sets = repo.dao.setsOnce(we.id)
-            val segments = sets.associate { it.id to repo.dao.segmentsOnce(it.id) }
-            ViewSessionExercise(we, exName, vName, sets, segments)
+            ViewSessionExercise(we, exName, vName, sets)
         }
         _state.update { it.copy(viewSession = session, viewSessionExercises = viewExercises) }
     }
@@ -220,15 +228,6 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
 
     fun completeSet(setId: String) = viewModelScope.launch {
         repo.dao.completeSet(setId)
-    }
-
-    // PATCH-12: update set weight/reps and main segment before completing
-    fun updateSetWeightReps(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
-        repo.dao.updateSetWeightReps(setId, weight, reps)
-    }
-
-    fun addSupplementalSegment(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
-        repo.dao.upsertSegment(WorkoutSetSegmentEntity(workoutSetId = setId, segmentIndex = 1, weight = weight, reps = reps, isSupplemental = true))
     }
 
     fun updateRestSeconds(workoutExerciseId: String, seconds: Int) = viewModelScope.launch {
@@ -248,12 +247,14 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // FIX: Do not create any variant automatically in addExercise.
-    // seedIfEmpty already provides a default "Базовый" for seed data.
-    // User can add variants manually via addVariant after creating the exercise.
+    // PATCH-6/7: Exercise editing — create exactly one default variant
     fun addExercise(name: String, group: String, strategy: String, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)
+        val vName = if (variantName.isBlank()) "Базовый" else variantName
+        if (repo.dao.countVariantsByName(e.id, vName) == 0) {
+            repo.dao.upsertVariant(ExerciseVariantEntity(id = "${e.id}_${vName}", exerciseId = e.id, name = vName, isDefault = true))
+        }
     }
 
     fun updateExercise(exerciseId: String, name: String, group: String, strategy: String) = viewModelScope.launch {
@@ -308,29 +309,6 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
 
     fun importData(text: String) = viewModelScope.launch {
         runCatching { repo.importJson(text) }.onSuccess { _state.update { it.copy(message = "Импорт завершён") } }.onFailure { e -> _state.update { it.copy(message = "Ошибка импорта: ${e.message}") } }
-    }
-
-    fun exportToFile(path: String) = viewModelScope.launch {
-        runCatching {
-            val json = repo.exportJson()
-            java.io.File(path).apply {
-                parentFile?.mkdirs()
-                writeText(json, Charsets.UTF_8)
-            }
-            _state.update { it.copy(message = "Данные экспортированы") }
-        }.onFailure { e ->
-            _state.update { it.copy(message = "Ошибка экспорта: ${e.message}") }
-        }
-    }
-
-    fun importFromFile(path: String) = viewModelScope.launch {
-        runCatching {
-            val text = java.io.File(path).readText(Charsets.UTF_8)
-            repo.importJson(text)
-            _state.update { it.copy(message = "Данные восстановлены") }
-        }.onFailure { e ->
-            _state.update { it.copy(message = "Ошибка импорта: ${e.message}") }
-        }
     }
 
     fun sets(workoutExerciseId: String) = repo.dao.sets(workoutExerciseId)

@@ -43,9 +43,8 @@ class WorkoutRepository(private val context: Context, val dao: WorkoutDao = AppD
     suspend fun startSession(date: String = LocalDate.now().toString()) = WorkoutSessionEntity(date = date).also { dao.upsertSession(it) }
     suspend fun addExercise(sessionId: String, exerciseId: String, variantId: String?, order: Int, restSeconds: Int = 60) =
         WorkoutExerciseEntity(sessionId = sessionId, exerciseId = exerciseId, variantId = variantId, orderIndex = order, restSeconds = restSeconds).also { dao.upsertWorkoutExercise(it) }
-    // PATCH-12: set no longer stores weight/reps; main segment does
     suspend fun addSet(workoutExerciseId: String, index: Int, weight: Double, reps: Int, notes: String = "", warmup: Boolean = false) =
-        WorkoutSetEntity(workoutExerciseId = workoutExerciseId, setIndex = index, notes = notes, isWarmup = warmup).also { dao.upsertSet(it); dao.upsertSegment(WorkoutSetSegmentEntity(workoutSetId = it.id, segmentIndex = 0, type = SegmentType.main, weight = weight, reps = reps)) }
+        WorkoutSetEntity(workoutExerciseId = workoutExerciseId, setIndex = index, weight = weight, reps = reps, notes = notes, isWarmup = warmup).also { dao.upsertSet(it); dao.upsertSegment(WorkoutSetSegmentEntity(workoutSetId = it.id, type = SegmentType.main, weight = weight, reps = reps)) }
     suspend fun addDropSegment(setId: String, segmentIndex: Int, weight: Double, reps: Int, type: SegmentType = SegmentType.drop, notes: String = "") = dao.upsertSegment(WorkoutSetSegmentEntity(workoutSetId = setId, segmentIndex = segmentIndex, weight = weight, reps = reps, type = type, notes = notes))
 
     suspend fun createPlan(date: String, exercises: List<Triple<String, String?, TemplateExerciseItem>>): String {
@@ -103,7 +102,7 @@ class WorkoutRepository(private val context: Context, val dao: WorkoutDao = AppD
         b.exercises.forEach { dao.upsertExercise(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }
         b.variants.forEach { dao.upsertVariant(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }
         b.aliases.forEach { dao.upsertAlias(it) }; b.related.forEach { dao.upsertRelated(it) }; b.sessions.forEach { dao.upsertSession(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }
-        b.blocks.forEach { dao.upsertBlock(it) }; b.workoutExercises.forEach { dao.upsertWorkoutExercise(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }; b.sets.forEach { dao.upsertSet(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())); it.segmentsForImport()?.let { segs -> segs.forEach { seg -> dao.upsertSegment(seg) } } }; b.segments.forEach { dao.upsertSegment(it) }; b.media.forEach { dao.upsertMedia(it) }
+        b.blocks.forEach { dao.upsertBlock(it) }; b.workoutExercises.forEach { dao.upsertWorkoutExercise(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }; b.sets.forEach { dao.upsertSet(it.copy(dirty = true, syncStatus = SyncStatus.DIRTY, updatedAt = now())) }; b.segments.forEach { dao.upsertSegment(it) }; b.media.forEach { dao.upsertMedia(it) }
         b.templates.forEach { dao.upsertTemplate(it) }
         b.settings.forEach { dao.upsertSetting(it) }
     }
