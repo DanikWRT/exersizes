@@ -63,6 +63,15 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM app_settings") suspend fun allSettingsOnce(): List<AppSettingEntity>
 
     @Delete suspend fun deleteSession(s: WorkoutSessionEntity)
+    @Query("DELETE FROM workout_sessions WHERE id=:sessionId") suspend fun deleteSession(sessionId: String)
+    @Query("DELETE FROM workout_sets WHERE workoutExerciseId IN (SELECT id FROM workout_exercises WHERE sessionId=:sessionId)") suspend fun deleteSetsBySessionId(sessionId: String)
+    @Query("DELETE FROM workout_exercises WHERE sessionId=:sessionId") suspend fun deleteWorkoutExercisesBySessionId(sessionId: String)
+    @Transaction
+    suspend fun deleteSessionWithData(sessionId: String) {
+        deleteSetsBySessionId(sessionId)
+        deleteWorkoutExercisesBySessionId(sessionId)
+        deleteSession(sessionId)
+    }
     @Delete suspend fun deleteVariant(v: ExerciseVariantEntity)
     @Query("DELETE FROM exercise_variants WHERE id=:id") suspend fun deleteVariantById(id: String)
     @Query("SELECT COUNT(*) FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.variantId=:variantId") suspend fun countSetsForVariant(variantId: String): Int

@@ -181,7 +181,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deleteSession(s: WorkoutSessionEntity) = viewModelScope.launch {
-        repo.dao.deleteSession(s)
+        repo.dao.deleteSessionWithData(s.id)
     }
 
     // PATCH-5: reopen completed session
