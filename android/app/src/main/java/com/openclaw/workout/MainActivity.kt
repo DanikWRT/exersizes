@@ -649,15 +649,6 @@ class MainActivity : ComponentActivity() {
     var restTimer by remember { mutableStateOf(0) }
     var restActive by remember { mutableStateOf(false) }
 
-    var showFinishDialog by remember { mutableStateOf(false) }
-    var finishDialogSetId by remember { mutableStateOf("") }
-    var finishDialogWeight by remember { mutableStateOf(0.0) }
-    var finishDialogReps by remember { mutableStateOf(0) }
-
-    var showSupplementalDialog by remember { mutableStateOf(false) }
-    var supplementalWeight by remember { mutableStateOf(0.0) }
-    var supplementalReps by remember { mutableStateOf(0) }
-
     val exName = s.exercises.find { it.id == we?.exerciseId }?.name ?: "Упражнение"
     val allDone = sets.isNotEmpty() && sets.all { it.isCompleted }
     val currentSet = sets.firstOrNull { !it.isCompleted }
@@ -699,7 +690,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
-                            Text("Подход ${set.setIndex + 1}${if (set.isSupplemental) " (доп.)" else ""}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text("Подход ${set.setIndex + 1}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Text("${set.weight} кг × ${set.reps} повт.", fontSize = 16.sp)
                         }
                         if (set.isCompleted) {
@@ -746,12 +737,12 @@ class MainActivity : ComponentActivity() {
         } else if (isSetInProgress) {
             Button(
                 onClick = {
-                    currentSet?.let { set ->
-                        finishDialogSetId = set.id
-                        finishDialogWeight = set.weight
-                        finishDialogReps = set.reps
-                        showFinishDialog = true
+                    currentSet?.let {
+                        vm.completeSet(it.id)
                     }
+                    isSetInProgress = false
+                    restTimer = restSeconds
+                    restActive = true
                 },
                 modifier = Modifier.fillMaxWidth().height(80.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -763,117 +754,6 @@ class MainActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text("Старт", fontSize = 24.sp, fontWeight = FontWeight.Bold) }
         }
-
-        // Supplemental set button (only when a set is complete / after set finished)
-        if ((allDone || !isSetInProgress) && !restActive && sets.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = {
-                    val mainSet = sets.lastOrNull { !it.isSupplemental }
-                    supplementalWeight = mainSet?.weight?.let { kotlin.math.max(0.0, it - 5.0) } ?: 0.0
-                    supplementalReps = mainSet?.reps ?: 0
-                    showSupplementalDialog = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("+ Дополнительный подход") }
-        }
-    }
-
-    // FEATURE-3: Finish set dialog — edit weight and reps
-    if (showFinishDialog) {
-        AlertDialog(
-            onDismissRequest = { showFinishDialog = false },
-            title = { Text("Завершить подход") },
-            text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Weight stepper
-                    Text("Вес", style = MaterialTheme.typography.labelSmall)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                        IconButton(onClick = { finishDialogWeight = kotlin.math.max(0.0, finishDialogWeight - 0.5) }) { Icon(Icons.Default.Remove, null) }
-                        Text(
-                            text = "${finishDialogWeight}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            modifier = Modifier.widthIn(min = 64.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        IconButton(onClick = { finishDialogWeight = finishDialogWeight + 0.5 }) { Icon(Icons.Default.Add, null) }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    // Reps stepper
-                    Text("Повторы", style = MaterialTheme.typography.labelSmall)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                        IconButton(onClick = { finishDialogReps = kotlin.math.max(0, finishDialogReps - 1) }) { Icon(Icons.Default.Remove, null) }
-                        Text(
-                            text = "${finishDialogReps}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            modifier = Modifier.widthIn(min = 48.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        IconButton(onClick = { finishDialogReps = finishDialogReps + 1 }) { Icon(Icons.Default.Add, null) }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        vm.completeSet(finishDialogSetId, finishDialogWeight, finishDialogReps)
-                        showFinishDialog = false
-                        isSetInProgress = false
-                        restTimer = restSeconds
-                        restActive = true
-                    }
-                ) { Text("Сохранить и завершить") }
-            },
-            dismissButton = { TextButton(onClick = { showFinishDialog = false }) { Text("Отмена") } }
-        )
-    }
-
-    // FEATURE-4: Supplemental set dialog
-    if (showSupplementalDialog) {
-        AlertDialog(
-            onDismissRequest = { showSupplementalDialog = false },
-            title = { Text("Дополнительный подход") },
-            text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Вес", style = MaterialTheme.typography.labelSmall)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                        IconButton(onClick = { supplementalWeight = kotlin.math.max(0.0, supplementalWeight - 0.5) }) { Icon(Icons.Default.Remove, null) }
-                        Text(
-                            text = "${supplementalWeight}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            modifier = Modifier.widthIn(min = 64.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        IconButton(onClick = { supplementalWeight = supplementalWeight + 0.5 }) { Icon(Icons.Default.Add, null) }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text("Повторы", style = MaterialTheme.typography.labelSmall)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                        IconButton(onClick = { supplementalReps = kotlin.math.max(0, supplementalReps - 1) }) { Icon(Icons.Default.Remove, null) }
-                        Text(
-                            text = "${supplementalReps}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            modifier = Modifier.widthIn(min = 48.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        IconButton(onClick = { supplementalReps = supplementalReps + 1 }) { Icon(Icons.Default.Add, null) }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        vm.addSupplementalSet(workoutExerciseId, supplementalWeight, supplementalReps)
-                        showSupplementalDialog = false
-                    }
-                ) { Text("Сохранить") }
-            },
-            dismissButton = { TextButton(onClick = { showSupplementalDialog = false }) { Text("Отмена") } }
-        )
     }
 }
 
@@ -913,7 +793,7 @@ class MainActivity : ComponentActivity() {
                             Spacer(Modifier.height(4.dp))
                             vse.sets.forEach { set ->
                                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("Подход ${set.setIndex + 1}${if (set.isSupplemental) " (доп.)" else ""}: ${set.weight} кг × ${set.reps} повт.")
+                                    Text("Подход ${set.setIndex + 1}: ${set.weight} кг × ${set.reps} повт.")
                                     if (set.isCompleted) Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                 }
                             }

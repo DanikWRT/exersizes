@@ -160,7 +160,6 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // PATCH-3: load template into plan editor
-    // FEATURE-2: auto-fill from history (falls back to template values when no history)
     fun loadTemplateIntoPlan(templateId: String) = viewModelScope.launch {
         val items = repo.loadTemplateAsPlan(templateId) ?: return@launch
         val planItems = items.map { tpl ->
@@ -168,19 +167,10 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
             val vName = _state.value.exercises.find { it.id == tpl.exerciseId }?.let { ex ->
                 repo.dao.variants(ex.id).first().find { it.id == tpl.variantId }?.name
             } ?: (tpl.variantId?.let { repo.dao.variantById(it)?.name } ?: "Базовый")
-
-            // FEATURE-2: last real weight/sets/rest from history
-            val lastSet = repo.getLastSetForVariant(tpl.exerciseId, tpl.variantId)
-            val lastWe = repo.getLastWorkoutExerciseForVariant(tpl.exerciseId, tpl.variantId)
-            val lastSetsCount = lastWe?.let { repo.dao.setsOnce(it.id).size } ?: tpl.sets
-
             PlanExerciseItem(
                 exerciseId = tpl.exerciseId, exerciseName = exName,
                 variantId = tpl.variantId, variantName = vName,
-                weight = lastSet?.weight ?: tpl.weight,
-                reps = lastSet?.reps ?: tpl.reps,
-                sets = lastSetsCount.coerceAtLeast(1),
-                restSeconds = lastWe?.restSeconds ?: tpl.restSeconds
+                weight = tpl.weight, reps = tpl.reps, sets = tpl.sets, restSeconds = tpl.restSeconds
             )
         }
         _state.update { it.copy(planExercises = planItems) }
@@ -226,31 +216,8 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
 
     fun clearViewSession() { _state.update { it.copy(viewSession = null, viewSessionExercises = emptyList()) } }
 
-    fun completeSet(setId: String, weight: Double? = null, reps: Int? = null) = viewModelScope.launch {
-        val set = repo.dao.setById(setId) ?: return@launch
-        if (weight != null && reps != null) {
-            repo.dao.updateSetWeightReps(setId, weight, reps)
-        }
+    fun completeSet(setId: String) = viewModelScope.launch {
         repo.dao.completeSet(setId)
-    }
-
-    fun addSupplementalSet(workoutExerciseId: String, weight: Double, reps: Int) = viewModelScope.launch {
-        val existing = repo.dao.setsOnce(workoutExerciseId)
-        val nextIndex = existing.maxOfOrNull { it.setIndex }?.plus(1) ?: 0
-        val supplemental = WorkoutSetEntity(
-            workoutExerciseId = workoutExerciseId,
-            setIndex = nextIndex,
-            weight = weight,
-            reps = reps,
-            isSupplemental = true,
-            isCompleted = true,
-            completedAt = now()
-        )
-        repo.dao.upsertSet(supplemental)
-    }
-
-    fun updateSetWeightReps(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
-        repo.dao.updateSetWeightReps(setId, weight, reps)
     }
 
     fun updateRestSeconds(workoutExerciseId: String, seconds: Int) = viewModelScope.launch {
