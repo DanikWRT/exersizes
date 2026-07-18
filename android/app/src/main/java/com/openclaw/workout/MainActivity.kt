@@ -649,9 +649,28 @@ class MainActivity : ComponentActivity() {
     var restTimer by remember { mutableStateOf(0) }
     var restActive by remember { mutableStateOf(false) }
 
+    // PATCH-12: editable weight/reps for current set
+    val currentSet = sets.firstOrNull { !it.isCompleted }
+    val currentSegments by currentSet?.let { vm.segments(it.id).collectAsState(emptyList()) } ?: remember { mutableStateOf(emptyList()) }
+    val mainSegment = currentSegments.find { !it.isSupplemental }
+    val supplementalSegments = currentSegments.filter { it.isSupplemental }
+    var currentWeight by remember(mainSegment?.id, mainSegment?.weight) { mutableStateOf(mainSegment?.weight ?: 10.0) }
+    var currentReps by remember(mainSegment?.id, mainSegment?.reps) { mutableStateOf(mainSegment?.reps ?: 12) }
+
+    // PATCH-12: supplemental segment dialog
+    var showSupplementalDialog by remember { mutableStateOf(false) }
+    var supWeight by remember { mutableStateOf(0.0) }
+    var supReps by remember { mutableStateOf(0) }
+
     val exName = s.exercises.find { it.id == we?.exerciseId }?.name ?: "Упражнение"
     val allDone = sets.isNotEmpty() && sets.all { it.isCompleted }
-    val currentSet = sets.firstOrNull { !it.isCompleted }
+
+    LaunchedEffect(mainSegment) {
+        mainSegment?.let {
+            currentWeight = it.weight
+            currentReps = it.reps
+        }
+    }
 
     LaunchedEffect(restActive) {
         while (restActive && restTimer > 0) {
@@ -674,9 +693,10 @@ class MainActivity : ComponentActivity() {
         }
         Spacer(Modifier.height(8.dp))
 
-        // Sets list — PATCH-9 colors
+        // Sets list — PATCH-12 shows segment summary
         LazyColumn(Modifier.weight(1f)) {
             items(sets) { set ->
+                val segments by vm.segments(set.id).collectAsState(emptyList())
                 val isCurrent = set.id == currentSet?.id
                 Card(
                     Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -691,7 +711,7 @@ class MainActivity : ComponentActivity() {
                     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text("Подход ${set.setIndex + 1}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text("${set.weight} кг × ${set.reps} повт.", fontSize = 16.sp)
+                            Text(setSegmentSummary(segments), fontSize = 16.sp)
                         }
                         if (set.isCompleted) {
                             Icon(Icons.Default.CheckCircle, "Готово", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
@@ -713,6 +733,57 @@ class MainActivity : ComponentActivity() {
         }
 
         Spacer(Modifier.height(8.dp))
+
+        // PATCH-12: weight/reps controls shown after Start
+        if (isSetInProgress && currentSet != null) {
+            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                Column(Modifier.padding(12.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                        // Weight stepper 0.5
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Вес", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { currentWeight = kotlin.math.max(0.0, currentWeight - 0.5) }) { Icon(Icons.Default.Remove, null) }
+                                Text(
+                                    text = "%.1f".format(currentWeight),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp,
+                                    modifier = Modifier.widthIn(min = 56.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                                IconButton(onClick = { currentWeight += 0.5 }) { Icon(Icons.Default.Add, null) }
+                            }
+                        }
+                        // Reps stepper 1
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Повторы", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { currentReps = kotlin.math.max(0, currentReps - 1) }) { Icon(Icons.Default.Remove, null) }
+                                Text(
+                                    text = "$currentReps",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp,
+                                    modifier = Modifier.widthIn(min = 40.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                                IconButton(onClick = { currentReps += 1 }) { Icon(Icons.Default.Add, null) }
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            // PATCH-12: + Доп повторения
+            OutlinedButton(
+                onClick = {
+                    supWeight = currentWeight
+                    supReps = currentReps
+                    showSupplementalDialog = true
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("Доп повторения") }
+            Spacer(Modifier.height(8.dp))
+        }
 
         if (!isSetInProgress && !restActive) {
             Row(
@@ -738,6 +809,8 @@ class MainActivity : ComponentActivity() {
             Button(
                 onClick = {
                     currentSet?.let {
+                        // PATCH-12: save current weight/reps before completing
+                        vm.updateSetWeightReps(it.id, currentWeight, currentReps)
                         vm.completeSet(it.id)
                     }
                     isSetInProgress = false
@@ -754,6 +827,53 @@ class MainActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text("Старт", fontSize = 24.sp, fontWeight = FontWeight.Bold) }
         }
+    }
+
+    // PATCH-12: supplemental dialog
+    if (showSupplementalDialog && currentSet != null) {
+        AlertDialog(
+            onDismissRequest = { showSupplementalDialog = false },
+            title = { Text("Дополнительные повторения") },
+            text = {
+                Column {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Вес", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { supWeight = kotlin.math.max(0.0, supWeight - 0.5) }) { Icon(Icons.Default.Remove, null) }
+                                Text("%.1f".format(supWeight), fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.widthIn(min = 56.dp), textAlign = TextAlign.Center)
+                                IconButton(onClick = { supWeight += 0.5 }) { Icon(Icons.Default.Add, null) }
+                            }
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Повторы", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { supReps = kotlin.math.max(0, supReps - 1) }) { Icon(Icons.Default.Remove, null) }
+                                Text("$supReps", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.widthIn(min = 40.dp), textAlign = TextAlign.Center)
+                                IconButton(onClick = { supReps += 1 }) { Icon(Icons.Default.Add, null) }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        vm.addSupplementalSegment(currentSet.id, supWeight, supReps)
+                        showSupplementalDialog = false
+                    }
+                ) { Text("Добавить") }
+            },
+            dismissButton = { TextButton(onClick = { showSupplementalDialog = false }) { Text("Отмена") } }
+        )
+    }
+}
+
+// PATCH-12: helper to display set summary from segments, including supplemental segments
+@Composable
+private fun setSegmentSummary(segments: List<WorkoutSetSegmentEntity>): String {
+    return segments.sortedBy { it.segmentIndex }.joinToString(" + ") {
+        "%.1f".format(it.weight) + "кг × " + it.reps
     }
 }
 
@@ -792,8 +912,9 @@ class MainActivity : ComponentActivity() {
                             if (vse.variantName != "Базовый") Text(vse.variantName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.height(4.dp))
                             vse.sets.forEach { set ->
+                                val segs = vse.segments[set.id] ?: emptyList()
                                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("Подход ${set.setIndex + 1}: ${set.weight} кг × ${set.reps} повт.")
+                                    Text("Подход ${set.setIndex + 1}: ${setSegmentSummary(segs)}")
                                     if (set.isCompleted) Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                 }
                             }
@@ -942,9 +1063,9 @@ class MainActivity : ComponentActivity() {
 @Composable fun ChartCard(sets: List<WorkoutSetWithSessionDate>) {
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(Modifier.padding(16.dp)) {
-            val weights = sets.map { it.weight }
-            val reps = sets.map { it.reps.toDouble() }
-            val avg = sets.map { (it.weight + it.reps) / 2.0 }
+            val weights = sets.map { it.weight ?: 0.0 }
+            val reps = sets.map { (it.reps ?: 0).toDouble() }
+            val avg = sets.map { ((it.weight ?: 0.0) + (it.reps ?: 0)) / 2.0 }
             val dates = sets.map { formatSessionDate(it.sessionDate) }
             SimpleChart(weights, reps, avg, dates)
             Spacer(Modifier.height(8.dp))

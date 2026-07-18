@@ -41,7 +41,8 @@ data class ViewSessionExercise(
     val workoutExercise: WorkoutExerciseEntity,
     val exerciseName: String,
     val variantName: String,
-    val sets: List<WorkoutSetEntity>
+    val sets: List<WorkoutSetEntity>,
+    val segments: Map<String, List<WorkoutSetSegmentEntity>> = emptyMap()
 )
 
 class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
@@ -198,7 +199,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         repo.dao.workoutExercises(sessionId).collect { w -> _state.update { it.copy(workoutExercises = w) } }
     }
 
-    // PATCH-4: load session for view
+    // PATCH-4: load session for view with segments
     fun loadSessionForView(sessionId: String) = viewModelScope.launch {
         val session = repo.dao.session(sessionId) ?: return@launch
         val wes = repo.dao.workoutExercisesOnce(sessionId)
@@ -209,7 +210,8 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
                     ?: repo.dao.variantById(vid)?.name ?: "—"
             } ?: "Базовый"
             val sets = repo.dao.setsOnce(we.id)
-            ViewSessionExercise(we, exName, vName, sets)
+            val segments = sets.associate { it.id to repo.dao.segmentsOnce(it.id) }
+            ViewSessionExercise(we, exName, vName, sets, segments)
         }
         _state.update { it.copy(viewSession = session, viewSessionExercises = viewExercises) }
     }
@@ -218,6 +220,15 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
 
     fun completeSet(setId: String) = viewModelScope.launch {
         repo.dao.completeSet(setId)
+    }
+
+    // PATCH-12: update set weight/reps and main segment before completing
+    fun updateSetWeightReps(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
+        repo.dao.updateSetWeightReps(setId, weight, reps)
+    }
+
+    fun addSupplementalSegment(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
+        repo.dao.upsertSegment(WorkoutSetSegmentEntity(workoutSetId = setId, segmentIndex = 1, weight = weight, reps = reps, isSupplemental = true))
     }
 
     fun updateRestSeconds(workoutExerciseId: String, seconds: Int) = viewModelScope.launch {
@@ -237,13 +248,12 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // PATCH-6/7: Exercise editing — create exactly one default variant
+    // PATCH-12: no auto "Базовый" — seedIfEmpty already creates it. Only create variant if user named it.
     fun addExercise(name: String, group: String, strategy: String, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)
-        val vName = if (variantName.isBlank()) "Базовый" else variantName
-        if (repo.dao.countVariantsByName(e.id, vName) == 0) {
-            repo.dao.upsertVariant(ExerciseVariantEntity(id = "${e.id}_${vName}", exerciseId = e.id, name = vName, isDefault = true))
+        if (variantName.isNotBlank() && repo.dao.countVariantsByName(e.id, variantName) == 0) {
+            repo.dao.upsertVariant(ExerciseVariantEntity(id = "${e.id}_${variantName}", exerciseId = e.id, name = variantName, isDefault = true))
         }
     }
 

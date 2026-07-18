@@ -53,23 +53,33 @@ enum class MediaType { image, gif, video, external_url }
 
 @Entity(tableName = "workout_sets", indices = [Index("workoutExerciseId")])
 @Serializable data class WorkoutSetEntity(
-    @PrimaryKey val id: String = uuid(), val workoutExerciseId: String, val setIndex: Int, val weight: Double = 0.0, val reps: Int = 0,
-    val notes: String = "", val isWarmup: Boolean = false, val isCompleted: Boolean = false,
-    val completedAt: Long? = null,
-    val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true
-)
-
-// PATCH-9: projection used by JOIN queries that need session date instead of createdAt
-@Serializable data class WorkoutSetWithSessionDate(
-    val id: String, val workoutExerciseId: String, val setIndex: Int, val weight: Double = 0.0, val reps: Int = 0,
+    @PrimaryKey val id: String = uuid(), val workoutExerciseId: String, val setIndex: Int,
     val notes: String = "", val isWarmup: Boolean = false, val isCompleted: Boolean = false,
     val completedAt: Long? = null,
     val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true,
-    val sessionDate: String
+    val weight: Double? = null, val reps: Int? = null
+)
+
+// PATCH-12: projection used by JOIN queries that need session date instead of createdAt
+@Serializable data class WorkoutSetWithSessionDate(
+    val id: String, val workoutExerciseId: String, val setIndex: Int,
+    val notes: String = "", val isWarmup: Boolean = false, val isCompleted: Boolean = false,
+    val completedAt: Long? = null,
+    val createdAt: Long = now(), val updatedAt: Long = now(), val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true,
+    val sessionDate: String,
+    val weight: Double? = null, val reps: Int? = null
 )
 
 @Entity(tableName = "workout_set_segments", indices = [Index("workoutSetId")])
-@Serializable data class WorkoutSetSegmentEntity(@PrimaryKey val id: String = uuid(), val workoutSetId: String, val segmentIndex: Int = 0, val weight: Double = 0.0, val reps: Int = 0, val notes: String = "", val type: SegmentType = SegmentType.main)
+@Serializable data class WorkoutSetSegmentEntity(
+    @PrimaryKey val id: String = uuid(), val workoutSetId: String, val segmentIndex: Int = 0, val weight: Double = 0.0, val reps: Int = 0, val notes: String = "", val type: SegmentType = SegmentType.main, val isSupplemental: Boolean = false
+)
+
+// PATCH-12: migration helper to extract legacy weight/reps into main segment when importing old JSON
+fun WorkoutSetEntity.segmentsForImport(): List<WorkoutSetSegmentEntity>? {
+    if (weight == null || reps == null) return null
+    return listOf(WorkoutSetSegmentEntity(workoutSetId = id, segmentIndex = 0, weight = weight, reps = reps, type = SegmentType.main, isSupplemental = false))
+}
 
 @Entity(tableName = "exercise_media", indices = [Index("exerciseId")])
 @Serializable data class ExerciseMediaEntity(@PrimaryKey val id: String = uuid(), val exerciseId: String, val type: MediaType = MediaType.external_url, val uri: String, val thumbnailUri: String = "", val caption: String = "", val createdAt: Long = now())
