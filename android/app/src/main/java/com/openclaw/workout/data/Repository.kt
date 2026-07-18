@@ -26,7 +26,7 @@ class WorkoutRepository(private val context: Context, val dao: WorkoutDao = AppD
             val e = ExerciseEntity(id = s.id, name = s.name, muscleGroup = s.muscle_group, weightStrategy = inferStrategy(s.name))
             dao.upsertExercise(e)
             if (dao.countVariantsByName(e.id, "Базовый") == 0) {
-                val v = ExerciseVariantEntity(exerciseId = e.id, name = "Базовый", isDefault = true)
+                val v = ExerciseVariantEntity(id = "${e.id}_Базовый", exerciseId = e.id, name = "Базовый", isDefault = true)
                 dao.upsertVariant(v)
             }
             s.aliases.forEach { dao.upsertAlias(ExerciseAliasEntity(exerciseId = e.id, alias = it, normalizedAlias = norm(it))) }
