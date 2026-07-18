@@ -226,8 +226,31 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
 
     fun clearViewSession() { _state.update { it.copy(viewSession = null, viewSessionExercises = emptyList()) } }
 
-    fun completeSet(setId: String) = viewModelScope.launch {
+    fun completeSet(setId: String, weight: Double? = null, reps: Int? = null) = viewModelScope.launch {
+        val set = repo.dao.setById(setId) ?: return@launch
+        if (weight != null && reps != null) {
+            repo.dao.updateSetWeightReps(setId, weight, reps)
+        }
         repo.dao.completeSet(setId)
+    }
+
+    fun addSupplementalSet(workoutExerciseId: String, weight: Double, reps: Int) = viewModelScope.launch {
+        val existing = repo.dao.setsOnce(workoutExerciseId)
+        val nextIndex = existing.maxOfOrNull { it.setIndex }?.plus(1) ?: 0
+        val supplemental = WorkoutSetEntity(
+            workoutExerciseId = workoutExerciseId,
+            setIndex = nextIndex,
+            weight = weight,
+            reps = reps,
+            isSupplemental = true,
+            isCompleted = true,
+            completedAt = now()
+        )
+        repo.dao.upsertSet(supplemental)
+    }
+
+    fun updateSetWeightReps(setId: String, weight: Double, reps: Int) = viewModelScope.launch {
+        repo.dao.updateSetWeightReps(setId, weight, reps)
     }
 
     fun updateRestSeconds(workoutExerciseId: String, seconds: Int) = viewModelScope.launch {

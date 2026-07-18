@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.Flow
         FROM workout_sets s
         INNER JOIN workout_exercises we ON we.id = s.workoutExerciseId
         INNER JOIN workout_sessions ws ON ws.id = we.sessionId
-        WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId)
+        WHERE we.exerciseId = :exerciseId AND ((:variantId IS NULL AND we.variantId IS NULL) OR we.variantId = :variantId) AND s.isSupplemental = 0
         ORDER BY ws.date, s.createdAt
     """)
     fun exactVariantSets(exerciseId: String, variantId: String?): Flow<List<WorkoutSetWithSessionDate>>
@@ -109,6 +109,7 @@ import kotlinx.coroutines.flow.Flow
     @Query("UPDATE workout_sessions SET finishedAt=NULL, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun reopenSession(id: String, ts: Long = now())
 
     @Query("UPDATE workout_sets SET isCompleted=1, completedAt=:ts, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun completeSet(id: String, ts: Long = now())
+    @Query("UPDATE workout_sets SET weight=:weight, reps=:reps, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateSetWeightReps(id: String, weight: Double, reps: Int, ts: Long = now())
     @Query("UPDATE exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExerciseRest(id: String, seconds: Int, ts: Long = now())
     @Query("UPDATE exercise_variants SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateVariantRest(id: String, seconds: Int, ts: Long = now())
     @Query("UPDATE workout_exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateWorkoutExerciseRest(id: String, seconds: Int, ts: Long = now())
