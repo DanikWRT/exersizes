@@ -243,7 +243,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         repo.dao.upsertExercise(e)
         val vName = if (variantName.isBlank()) "Базовый" else variantName
         if (repo.dao.countVariantsByName(e.id, vName) == 0) {
-            repo.dao.upsertVariant(ExerciseVariantEntity(exerciseId = e.id, name = vName, isDefault = true))
+            repo.dao.upsertVariant(ExerciseVariantEntity(id = "${e.id}_${vName}", exerciseId = e.id, name = vName, isDefault = true))
         }
     }
 
@@ -256,7 +256,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun addVariant(exerciseId: String, name: String, desc: String = "") = viewModelScope.launch {
-        repo.dao.upsertVariant(ExerciseVariantEntity(exerciseId = exerciseId, name = name, description = desc))
+        repo.dao.upsertVariant(ExerciseVariantEntity(id = "${exerciseId}_${name}", exerciseId = exerciseId, name = name, description = desc))
     }
 
     fun updateVariantName(variantId: String, name: String) = viewModelScope.launch {
