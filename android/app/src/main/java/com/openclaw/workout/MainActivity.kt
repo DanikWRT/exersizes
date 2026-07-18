@@ -439,6 +439,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable fun PlanExerciseCard(vm: WorkoutViewModel, index: Int, item: PlanExerciseItem) {
+    var showWeightInput by remember { mutableStateOf(false) }
+    var showRepsInput by remember { mutableStateOf(false) }
+    var showSetsInput by remember { mutableStateOf(false) }
+    var showRestInput by remember { mutableStateOf(false) }
+
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(Modifier.padding(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -448,64 +453,133 @@ class MainActivity : ComponentActivity() {
             }
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // FEATURE-1: Weight stepper (+/- 0.5) with optional direct input
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Text("Вес", style = MaterialTheme.typography.labelSmall)
-                    OutlinedTextField(
-                        value = if (item.weight == 0.0) "" else item.weight.toString(),
-                        onValueChange = { vm.updatePlanExercise(index, weight = it.toDoubleOrNull() ?: 0.0) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                        IconButton(onClick = { vm.updatePlanExercise(index, weight = kotlin.math.max(0.0, item.weight - 0.5)) }) { Icon(Icons.Default.Remove, null) }
+                        Text(
+                            text = if (item.weight == 0.0) "—" else "${item.weight} кг",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.widthIn(min = 48.dp).clickable { showWeightInput = true },
+                            textAlign = TextAlign.Center
                         )
-                    )
+                        IconButton(onClick = { vm.updatePlanExercise(index, weight = item.weight + 0.5) }) { Icon(Icons.Default.Add, null) }
+                    }
                 }
+                // FEATURE-1: Reps stepper (+/- 1) with optional direct input
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Text("Повторы", style = MaterialTheme.typography.labelSmall)
-                    OutlinedTextField(
-                        value = item.reps.toString(),
-                        onValueChange = { vm.updatePlanExercise(index, reps = it.toIntOrNull() ?: 0) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                        IconButton(onClick = { vm.updatePlanExercise(index, reps = kotlin.math.max(0, item.reps - 1)) }) { Icon(Icons.Default.Remove, null) }
+                        Text(
+                            text = "${item.reps}",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.widthIn(min = 32.dp).clickable { showRepsInput = true },
+                            textAlign = TextAlign.Center
                         )
-                    )
+                        IconButton(onClick = { vm.updatePlanExercise(index, reps = item.reps + 1) }) { Icon(Icons.Default.Add, null) }
+                    }
                 }
+                // FEATURE-1: Sets stepper (+/- 1) with optional direct input
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Text("Подходы", style = MaterialTheme.typography.labelSmall)
-                    OutlinedTextField(
-                        value = item.sets.toString(),
-                        onValueChange = { vm.updatePlanExercise(index, sets = it.toIntOrNull() ?: 0) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                        IconButton(onClick = { vm.updatePlanExercise(index, sets = kotlin.math.max(1, item.sets - 1)) }) { Icon(Icons.Default.Remove, null) }
+                        Text(
+                            text = "${item.sets}",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.widthIn(min = 32.dp).clickable { showSetsInput = true },
+                            textAlign = TextAlign.Center
                         )
-                    )
+                        IconButton(onClick = { vm.updatePlanExercise(index, sets = item.sets + 1) }) { Icon(Icons.Default.Add, null) }
+                    }
                 }
             }
             Spacer(Modifier.height(8.dp))
+            // FEATURE-1: Rest stepper (+/- 30) with optional direct input
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Отдых: ", style = MaterialTheme.typography.bodyMedium)
-                IconButton(onClick = { if (item.restSeconds > 10) vm.updatePlanExercise(index, restSeconds = item.restSeconds - 10) }) { Icon(Icons.Default.Remove, null) }
-                Text("${item.restSeconds}с", fontWeight = FontWeight.Bold, modifier = Modifier.width(50.dp), textAlign = TextAlign.Center)
-                IconButton(onClick = { if (item.restSeconds < 300) vm.updatePlanExercise(index, restSeconds = item.restSeconds + 10) }) { Icon(Icons.Default.Add, null) }
+                IconButton(onClick = { vm.updatePlanExercise(index, restSeconds = kotlin.math.max(0, item.restSeconds - 30)) }) { Icon(Icons.Default.Remove, null) }
+                Text(
+                    text = "${item.restSeconds}с",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.width(56.dp).clickable { showRestInput = true },
+                    textAlign = TextAlign.Center
+                )
+                IconButton(onClick = { vm.updatePlanExercise(index, restSeconds = kotlin.math.min(600, item.restSeconds + 30)) }) { Icon(Icons.Default.Add, null) }
             }
         }
     }
+
+    if (showWeightInput) {
+        NumberInputDialog(
+            title = "Вес (кг)",
+            initial = if (item.weight == 0.0) "" else item.weight.toString(),
+            keyboardType = KeyboardType.Decimal,
+            onDismiss = { showWeightInput = false },
+            onConfirm = { vm.updatePlanExercise(index, weight = it.toDoubleOrNull() ?: 0.0); showWeightInput = false }
+        )
+    }
+    if (showRepsInput) {
+        NumberInputDialog(
+            title = "Повторы",
+            initial = item.reps.toString(),
+            keyboardType = KeyboardType.Number,
+            onDismiss = { showRepsInput = false },
+            onConfirm = { vm.updatePlanExercise(index, reps = it.toIntOrNull() ?: item.reps); showRepsInput = false }
+        )
+    }
+    if (showSetsInput) {
+        NumberInputDialog(
+            title = "Подходы",
+            initial = item.sets.toString(),
+            keyboardType = KeyboardType.Number,
+            onDismiss = { showSetsInput = false },
+            onConfirm = { vm.updatePlanExercise(index, sets = (it.toIntOrNull() ?: item.sets).coerceAtLeast(1)); showSetsInput = false }
+        )
+    }
+    if (showRestInput) {
+        NumberInputDialog(
+            title = "Отдых (сек)",
+            initial = item.restSeconds.toString(),
+            keyboardType = KeyboardType.Number,
+            onDismiss = { showRestInput = false },
+            onConfirm = { vm.updatePlanExercise(index, restSeconds = (it.toIntOrNull() ?: item.restSeconds).coerceAtLeast(0)); showRestInput = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable fun NumberInputDialog(
+    title: String,
+    initial: String,
+    keyboardType: KeyboardType,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var value by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = value,
+                onValueChange = { value = it },
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        },
+        confirmButton = { TextButton(onClick = { onConfirm(value) }) { Text("OK") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } }
+    )
 }
 
 // ===================== WORKOUT EXECUTION SCREEN =====================
