@@ -243,16 +243,16 @@ class MainActivity : ComponentActivity() {
     var showConfirm by remember { mutableStateOf(false) }
     Card(
         Modifier.fillMaxWidth().padding(vertical = 2.dp).clickable { nav.navigate("view_session/${session.id}") },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(session.date, fontWeight = FontWeight.Medium)
+            Text(session.date, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("✓ Завершена", color = Color(0xFF2E7D32), fontWeight = FontWeight.Medium)
+                Text("✓ Завершена", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.width(4.dp))
                 Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(4.dp))
-                TextButton(onClick = { showConfirm = true }) { Text("✏️ Редактировать") }
+                TextButton(onClick = { showConfirm = true }) { Text("✏️ Редактировать", color = MaterialTheme.colorScheme.onPrimaryContainer) }
             }
         }
     }
@@ -312,7 +312,13 @@ class MainActivity : ComponentActivity() {
             readOnly = true,
             trailingIcon = {
                 Icon(Icons.Default.CalendarMonth, null, Modifier.clickable { datePickerDialog.show() })
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
         Spacer(Modifier.height(12.dp))
 
@@ -350,7 +356,13 @@ class MainActivity : ComponentActivity() {
                 OutlinedTextField(
                     value = templateName, onValueChange = { templateName = it },
                     label = { Text("Название шаблона") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 Spacer(Modifier.width(8.dp))
                 Button(onClick = { if (templateName.isNotBlank()) { vm.saveAsTemplate(templateName); templateName = ""; showSaveTemplate = false } }) { Text("OK") }
@@ -368,7 +380,13 @@ class MainActivity : ComponentActivity() {
                     OutlinedTextField(
                         value = s.query, onValueChange = { vm.setQuery(it) },
                         label = { Text("Поиск") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Spacer(Modifier.height(8.dp))
                     LazyColumn(Modifier.heightIn(max = 300.dp)) {
@@ -427,7 +445,13 @@ class MainActivity : ComponentActivity() {
                         onValueChange = { vm.updatePlanExercise(index, weight = it.toDoubleOrNull() ?: 0.0) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
@@ -437,7 +461,13 @@ class MainActivity : ComponentActivity() {
                         onValueChange = { vm.updatePlanExercise(index, reps = it.toIntOrNull() ?: 0) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
@@ -447,7 +477,13 @@ class MainActivity : ComponentActivity() {
                         onValueChange = { vm.updatePlanExercise(index, sets = it.toIntOrNull() ?: 0) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
@@ -489,16 +525,16 @@ class MainActivity : ComponentActivity() {
                 Card(
                     Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { nav.navigate("exercise_execution/${we.id}") },
                     colors = CardDefaults.cardColors(
-                        containerColor = if (allDone) Color(0xFFE8F5E9)
+                        containerColor = if (allDone) MaterialTheme.colorScheme.primaryContainer
                         else MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
                     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
-                            Text(exName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text("${sets.size} подходов · ${if (allDone) "✓ Готово" else "${sets.count { it.isCompleted }}/${sets.size} выполнено"}")
+                            Text(exName, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Text("${sets.size} подходов · ${if (allDone) "✓ Готово" else "${sets.count { it.isCompleted }}/${sets.size} выполнено"}", color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
-                        if (allDone) Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF2E7D32))
+                        if (allDone) Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
                         else Icon(Icons.Default.ChevronRight, null)
                     }
                 }
@@ -562,8 +598,8 @@ class MainActivity : ComponentActivity() {
                     Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = when {
-                            set.isCompleted -> Color(0xFFE8F5E9) // Green for completed
-                            isCurrent -> Color(0xFFFFF3E0) // Orange/yellow for current active
+                            set.isCompleted -> MaterialTheme.colorScheme.primaryContainer
+                            isCurrent -> MaterialTheme.colorScheme.tertiaryContainer
                             else -> MaterialTheme.colorScheme.surfaceVariant
                         }
                     )
@@ -574,7 +610,7 @@ class MainActivity : ComponentActivity() {
                             Text("${set.weight} кг × ${set.reps} повт.", fontSize = 16.sp)
                         }
                         if (set.isCompleted) {
-                            Icon(Icons.Default.CheckCircle, "Готово", tint = Color(0xFF4CAF50), modifier = Modifier.size(32.dp))
+                            Icon(Icons.Default.CheckCircle, "Готово", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                         }
                     }
                 }
@@ -586,7 +622,7 @@ class MainActivity : ComponentActivity() {
             Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Отдых", style = MaterialTheme.typography.titleMedium)
-                    Text("${restTimer}с", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                    Text("${restTimer}с", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
                     TextButton(onClick = { restActive = false; restTimer = 0 }) { Text("Пропустить") }
                 }
             }
@@ -600,7 +636,7 @@ class MainActivity : ComponentActivity() {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Отдых: ", fontSize = 16.sp)
+                Text("Отдых: ", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                 IconButton(onClick = { if (restSeconds > 10) { restSeconds -= 10 } }) { Icon(Icons.Default.Remove, null) }
                 Text("${restSeconds}с", fontWeight = FontWeight.Bold, fontSize = 20.sp, modifier = Modifier.width(60.dp), textAlign = TextAlign.Center)
                 IconButton(onClick = { if (restSeconds < 300) { restSeconds += 10 } }) { Icon(Icons.Default.Add, null) }
@@ -625,7 +661,7 @@ class MainActivity : ComponentActivity() {
                     restActive = true
                 },
                 modifier = Modifier.fillMaxWidth().height(80.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text("ЗАВЕРШИТЬ ПОДХОД", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
         } else {
             Button(
@@ -655,10 +691,10 @@ class MainActivity : ComponentActivity() {
         if (s.viewSession == null) {
             Text("Тренировка не найдена", color = MaterialTheme.colorScheme.error)
         } else {
-            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))) {
+            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Дата: ${s.viewSession!!.date}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text("✓ Завершена", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                    Text("Дата: ${s.viewSession!!.date}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("✓ Завершена", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -674,7 +710,7 @@ class MainActivity : ComponentActivity() {
                             vse.sets.forEach { set ->
                                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text("Подход ${set.setIndex + 1}: ${set.weight} кг × ${set.reps} повт.")
-                                    if (set.isCompleted) Text("✓", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                    if (set.isCompleted) Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                 }
                             }
                             if (vse.sets.isEmpty()) {
@@ -702,7 +738,13 @@ class MainActivity : ComponentActivity() {
             value = query, onValueChange = { query = it },
             label = { Text("Поиск") },
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = { Icon(Icons.Default.Search, null) }
+            trailingIcon = { Icon(Icons.Default.Search, null) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
         Spacer(Modifier.height(8.dp))
 
@@ -799,7 +841,7 @@ class MainActivity : ComponentActivity() {
                                 Text(dateStr, modifier = Modifier.weight(1.5f))
                                 Text("${set.weight}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                                 Text("${set.reps}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                                if (set.isCompleted) Text("✓", color = Color(0xFF4CAF50), modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+                                if (set.isCompleted) Text("✓", color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
                                 else Text("—", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
                             }
                         }
@@ -826,11 +868,11 @@ class MainActivity : ComponentActivity() {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Макс вес", style = MaterialTheme.typography.labelSmall)
-                    Text("${weights.maxOrNull() ?: 0.0} кг", fontWeight = FontWeight.Bold, color = Color.Blue)
+                    Text("${weights.maxOrNull() ?: 0.0} кг", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Макс повт", style = MaterialTheme.typography.labelSmall)
-                    Text("${reps.maxOrNull()?.toInt() ?: 0}", fontWeight = FontWeight.Bold, color = Color.Red)
+                    Text("${reps.maxOrNull()?.toInt() ?: 0}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Всего сетов", style = MaterialTheme.typography.labelSmall)
@@ -850,14 +892,14 @@ class MainActivity : ComponentActivity() {
         }
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-        legendItem(Color(0xFF2196F3), "Вес (кг)")()
-        legendItem(Color(0xFFF44336), "Повторения")()
-        legendItem(Color(0xFF4CAF50), "Среднее")()
+        legendItem(MaterialTheme.colorScheme.primary, "Вес (кг)")()
+        legendItem(MaterialTheme.colorScheme.error, "Повторения")()
+        legendItem(MaterialTheme.colorScheme.tertiary, "Среднее")()
     }
 }
 
 @Composable fun SimpleChart(weights: List<Double>, reps: List<Double>, avg: List<Double>, dates: List<String>) {
-    val gridColor = Color.Gray.copy(alpha = 0.3f)
+    val gridColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
     val textColor = MaterialTheme.colorScheme.onSurface
     Canvas(Modifier.fillMaxWidth().height(180.dp)) {
         val padLeft = 0f
@@ -939,7 +981,13 @@ class MainActivity : ComponentActivity() {
             value = query, onValueChange = { query = it },
             label = { Text("Поиск") },
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = { Icon(Icons.Default.Search, null) }
+            trailingIcon = { Icon(Icons.Default.Search, null) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
         Spacer(Modifier.height(8.dp))
         Button(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
@@ -983,11 +1031,26 @@ class MainActivity : ComponentActivity() {
             title = { Text("Новое упражнение") },
             text = {
                 Column {
-                    OutlinedTextField(value = newName, onValueChange = { newName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = newName, onValueChange = { newName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(value = newGroup, onValueChange = { newGroup = it }, label = { Text("Группа мышц") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = newGroup, onValueChange = { newGroup = it }, label = { Text("Группа мышц") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(value = newVariantName, onValueChange = { newVariantName = it }, label = { Text("Название варианта (например: Базовый, Скамья 30°)") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = newVariantName, onValueChange = { newVariantName = it }, label = { Text("Название варианта (например: Базовый, Скамья 30°)") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                 }
             },
             confirmButton = { Button(onClick = {
@@ -1008,9 +1071,19 @@ class MainActivity : ComponentActivity() {
             title = { Text("Редактировать упражнение") },
             text = {
                 Column {
-                    OutlinedTextField(value = editName, onValueChange = { editName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = editName, onValueChange = { editName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(value = editGroup, onValueChange = { editGroup = it }, label = { Text("Группа мышц") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = editGroup, onValueChange = { editGroup = it }, label = { Text("Группа мышц") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                     Spacer(Modifier.height(8.dp))
                     Text("Weight strategy:", style = MaterialTheme.typography.labelSmall)
                     WeightStrategy.values().forEach { strat ->
@@ -1033,9 +1106,19 @@ class MainActivity : ComponentActivity() {
             title = { Text("Новый вариант для ${variantExercise!!.name}") },
             text = {
                 Column {
-                    OutlinedTextField(value = variantName, onValueChange = { variantName = it }, label = { Text("Название варианта") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = variantName, onValueChange = { variantName = it }, label = { Text("Название варианта") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(value = variantDesc, onValueChange = { variantDesc = it }, label = { Text("Описание (опционально)") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = variantDesc, onValueChange = { variantDesc = it }, label = { Text("Описание (опционально)") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                 }
             },
             confirmButton = { Button(onClick = {
@@ -1081,7 +1164,12 @@ class MainActivity : ComponentActivity() {
             onDismissRequest = { editVariant = null },
             title = { Text("Переименовать вариант") },
             text = {
-                OutlinedTextField(value = editVariantName, onValueChange = { editVariantName = it }, label = { Text("Новое название") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = editVariantName, onValueChange = { editVariantName = it }, label = { Text("Новое название") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ))
             },
             confirmButton = { Button(onClick = { vm.updateVariantName(v.id, editVariantName); editVariant = null }) { Text("Сохранить") } },
             dismissButton = { TextButton(onClick = { editVariant = null }) { Text("Отмена") } }
@@ -1148,10 +1236,20 @@ class MainActivity : ComponentActivity() {
         Button(onClick = vm::exportData, modifier = Modifier.fillMaxWidth()) { Text("Экспорт JSON") }
         if (s.exportText.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            OutlinedTextField(value = s.exportText, onValueChange = {}, label = { Text("Экспорт") }, modifier = Modifier.fillMaxWidth().height(120.dp), readOnly = true)
+            OutlinedTextField(value = s.exportText, onValueChange = {}, label = { Text("Экспорт") }, modifier = Modifier.fillMaxWidth().height(120.dp), readOnly = true, colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ))
         }
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(value = importText, onValueChange = { importText = it }, label = { Text("Вставьте JSON для импорта") }, modifier = Modifier.fillMaxWidth().height(120.dp))
+        OutlinedTextField(value = importText, onValueChange = { importText = it }, label = { Text("Вставьте JSON для импорта") }, modifier = Modifier.fillMaxWidth().height(120.dp), colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ))
         Spacer(Modifier.height(8.dp))
         Button(onClick = { vm.importData(importText) }, modifier = Modifier.fillMaxWidth()) { Text("Импорт") }
         if (s.message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(s.message, color = MaterialTheme.colorScheme.primary) }

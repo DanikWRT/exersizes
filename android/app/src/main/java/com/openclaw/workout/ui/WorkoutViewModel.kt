@@ -241,7 +241,7 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     fun addExercise(name: String, group: String, strategy: WeightStrategy, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)
-        if (variantName.isNotBlank()) {
+        if (variantName.isNotBlank() && repo.dao.countVariantsByName(e.id, variantName) == 0) {
             repo.dao.upsertVariant(ExerciseVariantEntity(exerciseId = e.id, name = variantName, isDefault = true))
         }
     }

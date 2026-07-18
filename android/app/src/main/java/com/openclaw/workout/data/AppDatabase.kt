@@ -2,10 +2,12 @@ package com.openclaw.workout.data
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [ExerciseEntity::class, ExerciseVariantEntity::class, ExerciseAliasEntity::class, RelatedExerciseEntity::class, WorkoutSessionEntity::class, WorkoutBlockEntity::class, WorkoutExerciseEntity::class, WorkoutSetEntity::class, WorkoutSetSegmentEntity::class, ExerciseMediaEntity::class, WorkoutTemplateEntity::class, AppSettingEntity::class],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -13,8 +15,21 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): WorkoutDao
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    DELETE FROM exercise_variants
+                    WHERE id NOT IN (
+                        SELECT MIN(id) FROM exercise_variants
+                        GROUP BY exerciseId, name
+                    )
+                """)
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_unique ON exercise_variants(exerciseId, name)")
+            }
+        }
         fun get(context: Context): AppDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "workout-offline.db")
+                .addMigrations(MIGRATION_4_5)
                 .fallbackToDestructiveMigration()
                 .build().also { INSTANCE = it }
         }

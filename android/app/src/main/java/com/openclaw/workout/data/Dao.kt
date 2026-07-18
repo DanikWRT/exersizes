@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM exercises WHERE isArchived=0 ORDER BY name") fun exercises(): Flow<List<ExerciseEntity>>
     @Query("SELECT * FROM exercises ORDER BY name") suspend fun allExercisesOnce(): List<ExerciseEntity>
     @Query("SELECT * FROM exercises WHERE id=:id") suspend fun exerciseById(id: String): ExerciseEntity?
-    @Query("SELECT * FROM exercise_variants WHERE exerciseId=:exerciseId GROUP BY name ORDER BY isDefault DESC, name") fun variants(exerciseId: String): Flow<List<ExerciseVariantEntity>>
+    @Query("SELECT * FROM exercise_variants WHERE exerciseId=:exerciseId ORDER BY isDefault DESC, name") fun variants(exerciseId: String): Flow<List<ExerciseVariantEntity>>
+    @Query("SELECT COUNT(*) FROM exercise_variants WHERE exerciseId=:exerciseId AND name=:name") suspend fun countVariantsByName(exerciseId: String, name: String): Int
     @Query("SELECT * FROM exercise_variants WHERE id=:id") suspend fun variantById(id: String): ExerciseVariantEntity?
     @Query("SELECT * FROM exercise_variants") suspend fun allVariantsOnce(): List<ExerciseVariantEntity>
     @Query("SELECT * FROM exercise_aliases") suspend fun allAliasesOnce(): List<ExerciseAliasEntity>
