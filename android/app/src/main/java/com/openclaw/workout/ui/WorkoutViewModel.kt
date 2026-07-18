@@ -237,12 +237,13 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // PATCH-6/7: Exercise editing — PATCH-10: no auto "Базовый" when variantName blank
+    // PATCH-6/7: Exercise editing — create exactly one default variant
     fun addExercise(name: String, group: String, strategy: WeightStrategy, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)
-        if (variantName.isNotBlank() && repo.dao.countVariantsByName(e.id, variantName) == 0) {
-            repo.dao.upsertVariant(ExerciseVariantEntity(exerciseId = e.id, name = variantName, isDefault = true))
+        val vName = if (variantName.isBlank()) "Базовый" else variantName
+        if (repo.dao.countVariantsByName(e.id, vName) == 0) {
+            repo.dao.upsertVariant(ExerciseVariantEntity(exerciseId = e.id, name = vName, isDefault = true))
         }
     }
 
