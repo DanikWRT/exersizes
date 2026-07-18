@@ -1,0 +1,36 @@
+[
+  {
+    "start": "2026-04-13",
+    "days": [
+      {
+        "date": "2026-04-13",
+        "focus": "legs+shoulders"
+      },
+      {
+        "date": "2026-04-14",
+        "focus": "back+biceps"
+      },
+      {
+        "date": "2026-04-15",
+        "focus": "chest+triceps"
+      },
+      {
+        "date": "2026-04-16",
+        "focus": "legs+shoulders"
+      },
+      {
+        "date": "2026-04-17",
+        "focus": "back+biceps"
+      },
+      {
+        "date": "2026-04-18",
+        "focus": "chest+triceps"
+      },
+      {
+        "date": "2026-04-19",
+        "focus": "legs+shoulders"
+      }
+    ],
+    "split": "legs+shoulders,back+biceps,chest+triceps"
+  }
+]

@@ -1,0 +1,471 @@
+[
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим лёжа",
+    "weight": 20,
+    "reps": 20,
+    "notes": "Гриф х20",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим лёжа",
+    "weight": 20,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим лёжа",
+    "weight": 20,
+    "reps": 10,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим лёжа",
+    "weight": 20,
+    "reps": 9,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим лёжа",
+    "weight": 20,
+    "reps": 8,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-04",
+    "exercise": "Руки в стороны",
+    "weight": 1.39,
+    "reps": 12,
+    "notes": "занят был другой; запись веса неоднозначна (возможны 1.39/2.44/3.44/4.44 или формат 'подход-вес')",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Руки в стороны",
+    "weight": 2.44,
+    "reps": 12,
+    "notes": "из строки '2. 44 - 12'",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Руки в стороны",
+    "weight": 3.44,
+    "reps": 8,
+    "notes": "зажгло возле локтя",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Руки в стороны",
+    "weight": 4.44,
+    "reps": 11,
+    "notes": "в локте болит как будто вена вздувается",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим на тренажёре",
+    "weight": 10,
+    "reps": 8,
+    "notes": "подход 1",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим на тренажёре",
+    "weight": 10,
+    "reps": 10,
+    "notes": "подход 2",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим на тренажёре",
+    "weight": 10,
+    "reps": 8,
+    "notes": "подход 3",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Жим на тренажёре",
+    "weight": 10,
+    "reps": 6,
+    "notes": "подход 4",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-04",
+    "exercise": "Кроссовер",
+    "weight": 15,
+    "reps": 10,
+    "notes": "в заголовке написано '10 кг на каждую руку', но в сетах указано 15 кг",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Кроссовер",
+    "weight": 15,
+    "reps": 10,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Кроссовер",
+    "weight": 15,
+    "reps": 8,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Кроссовер",
+    "weight": 15,
+    "reps": 7,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-04",
+    "exercise": "Тяга блока сверху (трицепс)",
+    "weight": 20,
+    "reps": 15,
+    "notes": "исходный текст: 'Трицепц тяга блока сверху яйца'",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Тяга блока сверху (трицепс)",
+    "weight": 25,
+    "reps": 7,
+    "notes": "добил до 12 с 20кг",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Тяга блока сверху (трицепс)",
+    "weight": 20,
+    "reps": 6,
+    "notes": "добил до 12 с 15кг",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-04",
+    "exercise": "Тяга блока сверху (трицепс)",
+    "weight": 20,
+    "reps": 6,
+    "notes": "добил до 15 10 кг",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-09",
+    "exercise": "Выпады",
+    "weight": 5,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Выпады",
+    "weight": 10,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Выпады",
+    "weight": 10,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Выпады",
+    "weight": 10,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим платформы",
+    "weight": 50,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим платформы",
+    "weight": 60,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим платформы",
+    "weight": 70,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим платформы",
+    "weight": 75,
+    "reps": 8,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим к жопе",
+    "weight": 44,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим к жопе",
+    "weight": 49,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим к жопе",
+    "weight": 49,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим к жопе",
+    "weight": 49,
+    "reps": 8,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим на жопе",
+    "weight": 44,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим на жопе",
+    "weight": 49,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим на жопе",
+    "weight": 54,
+    "reps": 12,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-09",
+    "exercise": "Жим на жопе",
+    "weight": 54,
+    "reps": 13,
+    "notes": "уточнить упражнение/тренажёр",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга верхнего блока",
+    "weight": 39,
+    "reps": 12,
+    "notes": "исходный заголовок: 'Спина тяга на спину верхний блок'",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга верхнего блока",
+    "weight": 44,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга верхнего блока",
+    "weight": 44,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга верхнего блока",
+    "weight": 49,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга штанги к животу",
+    "weight": 20,
+    "reps": 12,
+    "notes": "в полуприсяде",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга штанги к животу",
+    "weight": 25,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга штанги к животу",
+    "weight": 25,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга штанги к животу",
+    "weight": 25,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга нижнего блока",
+    "weight": 29,
+    "reps": 12,
+    "notes": "средний хват, обе руки",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга нижнего блока",
+    "weight": 34,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга нижнего блока",
+    "weight": 34,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Тяга нижнего блока",
+    "weight": 34,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-10",
+    "exercise": "Гиперэкстензия",
+    "weight": 10,
+    "reps": 12,
+    "notes": "2 подхода (запись 1/2)",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Гиперэкстензия",
+    "weight": 10,
+    "reps": 12,
+    "notes": "2 подхода (запись 2/2)",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Гиперэкстензия",
+    "weight": 15,
+    "reps": 12,
+    "notes": "2 подхода (запись 1/2)",
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Гиперэкстензия",
+    "weight": 15,
+    "reps": 12,
+    "notes": "2 подхода (запись 2/2)",
+    "source": "raw_import.md"
+  },
+
+  {
+    "date": "2026-04-10",
+    "exercise": "Бицепс",
+    "weight": 15,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Бицепс",
+    "weight": 20,
+    "reps": 12,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Бицепс",
+    "weight": 20,
+    "reps": 10,
+    "notes": null,
+    "source": "raw_import.md"
+  },
+  {
+    "date": "2026-04-10",
+    "exercise": "Бицепс",
+    "weight": 20,
+    "reps": 8,
+    "notes": "и добил 10 кг до 15",
+    "source": "raw_import.md"
+  }
+]

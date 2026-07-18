@@ -1,0 +1,86 @@
+[
+  {
+    "id": "zhim-lezha",
+    "name": "Жим лёжа",
+    "muscle_group": "chest",
+    "aliases": ["Жим лежа"]
+  },
+  {
+    "id": "ruki-v-storony",
+    "name": "Руки в стороны",
+    "muscle_group": "shoulders",
+    "aliases": ["Разведения в стороны"]
+  },
+  {
+    "id": "zhim-na-trenazhere",
+    "name": "Жим на тренажёре",
+    "muscle_group": "chest",
+    "aliases": ["Жим на тренажера"]
+  },
+  {
+    "id": "krossover",
+    "name": "Кроссовер",
+    "muscle_group": "chest",
+    "aliases": ["На кроссовере"]
+  },
+  {
+    "id": "tritseps-tyaga-bloka-sverhu",
+    "name": "Тяга блока сверху (трицепс)",
+    "muscle_group": "triceps",
+    "aliases": ["Трицепц тяга блока сверху", "Трицепс тяга блока сверху"]
+  },
+  {
+    "id": "vypady",
+    "name": "Выпады",
+    "muscle_group": "legs",
+    "aliases": []
+  },
+  {
+    "id": "zhim-platformy",
+    "name": "Жим платформы",
+    "muscle_group": "legs",
+    "aliases": ["Жим ногами"]
+  },
+  {
+    "id": "zhim-k-zh",
+    "name": "Жим к жопе",
+    "muscle_group": "legs",
+    "aliases": ["Жим к жопе (уточнить)"]
+  },
+  {
+    "id": "zhim-na-zh",
+    "name": "Жим на жопе",
+    "muscle_group": "legs",
+    "aliases": ["Жим На жопе", "Жим на жопе (уточнить)"]
+  },
+  {
+    "id": "tyaga-verhnego-bloka",
+    "name": "Тяга верхнего блока",
+    "muscle_group": "back",
+    "aliases": ["Спина тяга на спину верхний блок"]
+  },
+  {
+    "id": "tyaga-shtangi-k-zhivotu",
+    "name": "Тяга штанги к животу",
+    "muscle_group": "back",
+    "aliases": ["Тяга штанги к животу в полуприсяде для спины"]
+  },
+  {
+    "id": "tyaga-nizhnego-bloka",
+    "name": "Тяга нижнего блока",
+    "muscle_group": "back",
+    "aliases": ["Тяга нижнего блока на обе руки средний хват"]
+  },
+  {
+    "id": "giperekstenziya",
+    "name": "Гиперэкстензия",
+    "muscle_group": "back",
+    "aliases": []
+  },
+  {
+    "id": "bitseps",
+    "name": "Бицепс",
+    "muscle_group": "biceps",
+    "aliases": ["Бицепц"]
+  }
+]

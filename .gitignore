@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.navigation/
+captures/
+*.hprof
+
+# Local
+local.properties
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db
+
+# APK — не игнорировать debug APK
+!app/build/outputs/apk/debug/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
