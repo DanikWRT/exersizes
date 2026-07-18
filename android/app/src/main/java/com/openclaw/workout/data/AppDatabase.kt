@@ -30,7 +30,6 @@ abstract class AppDatabase : RoomDatabase() {
         fun get(context: Context): AppDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "workout-offline.db")
                 .addMigrations(MIGRATION_4_5)
-                .fallbackToDestructiveMigration()
                 .build().also { INSTANCE = it }
         }
     }
