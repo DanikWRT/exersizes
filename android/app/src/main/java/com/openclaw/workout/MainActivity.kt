@@ -961,7 +961,11 @@ class MainActivity : ComponentActivity() {
     var editExercise by remember { mutableStateOf<ExerciseEntity?>(null) }
     var editName by remember { mutableStateOf("") }
     var editGroup by remember { mutableStateOf("") }
-    var editStrategy by remember { mutableStateOf(WeightStrategy.total_weight) }
+    var editStrategy by remember { mutableStateOf("") }
+
+    // Delete exercise dialog
+    var deleteExercise by remember { mutableStateOf<ExerciseEntity?>(null) }
+    var deleteExerciseSetsCount by remember { mutableStateOf(0) }
 
     // Variant dialog
     var variantExercise by remember { mutableStateOf<ExerciseEntity?>(null) }
@@ -1017,11 +1021,35 @@ class MainActivity : ComponentActivity() {
                                 editGroup = ex.muscleGroup
                                 editStrategy = ex.weightStrategy
                             }) { Icon(Icons.Default.Edit, "Редактировать") }
+                            IconButton(onClick = {
+                                deleteExercise = ex
+                            }) { Icon(Icons.Default.Delete, "Удалить") }
                         }
                     }
                 }
             }
         }
+    }
+
+    // Delete exercise confirmation dialog
+    deleteExercise?.let { ex ->
+        val sets by vm.exactSets(ex.id, null).collectAsState(emptyList())
+        val historyCount = sets.size
+        AlertDialog(
+            onDismissRequest = { deleteExercise = null },
+            title = { Text("Удалить упражнение '${ex.name}'?") },
+            text = {
+                Column {
+                    Text("Это действие нельзя отменить.")
+                    if (historyCount > 0) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("Внимание: у упражнения есть история (${historyCount} подходов). Удаление сотрёт все записи.", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { vm.deleteExercise(ex.id); deleteExercise = null }) { Text("Удалить", color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { deleteExercise = null }) { Text("Отмена") } }
+        )
     }
 
     // Add exercise dialog (PATCH-7: user names variant, no auto "Базовый")
@@ -1056,7 +1084,7 @@ class MainActivity : ComponentActivity() {
             confirmButton = { Button(onClick = {
                 if (newName.isNotBlank()) {
                     val vName = newVariantName.ifBlank { "Базовый" }
-                    vm.addExercise(newName, newGroup, WeightStrategy.total_weight, vName)
+                    vm.addExercise(newName, newGroup, "", vName)
                     newName = ""; newGroup = ""; newVariantName = ""; showAdd = false
                 }
             }) { Text("Добавить") } },
@@ -1085,13 +1113,12 @@ class MainActivity : ComponentActivity() {
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ))
                     Spacer(Modifier.height(8.dp))
-                    Text("Weight strategy:", style = MaterialTheme.typography.labelSmall)
-                    WeightStrategy.values().forEach { strat ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(selected = editStrategy == strat, onClick = { editStrategy = strat })
-                            Text(strat.name)
-                        }
-                    }
+                    OutlinedTextField(value = editStrategy, onValueChange = { editStrategy = it }, label = { Text("Weight strategy") }, placeholder = { Text("Например: гантели, штанга, тренажёр...") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ))
                 }
             },
             confirmButton = { Button(onClick = { vm.updateExercise(ex.id, editName, editGroup, editStrategy); editExercise = null }) { Text("Сохранить") } },

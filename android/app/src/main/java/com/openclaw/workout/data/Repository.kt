@@ -34,10 +34,10 @@ class WorkoutRepository(private val context: Context, val dao: WorkoutDao = AppD
     }
 
     private fun inferStrategy(name: String) = when {
-        name.contains("гантел", true) -> WeightStrategy.dumbbells_separately
-        name.contains("кроссовер", true) || name.contains("руки", true) -> WeightStrategy.per_hand
-        name.contains("штанг", true) || name.contains("жим лёжа", true) || name.contains("жим лежа", true) -> WeightStrategy.total_weight
-        else -> WeightStrategy.raw_number
+        name.contains("гантел", true) -> "гантели (отдельно)"
+        name.contains("кроссовер", true) || name.contains("руки", true) -> "на руку"
+        name.contains("штанг", true) || name.contains("жим лёжа", true) || name.contains("жим лежа", true) -> "общий вес"
+        else -> ""
     }
 
     suspend fun startSession(date: String = LocalDate.now().toString()) = WorkoutSessionEntity(date = date).also { dao.upsertSession(it) }

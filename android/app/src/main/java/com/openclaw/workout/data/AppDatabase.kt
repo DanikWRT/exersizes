@@ -39,8 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
 class Converters {
     @TypeConverter fun syncStatus(v: SyncStatus) = v.name
     @TypeConverter fun syncStatus(v: String) = SyncStatus.valueOf(v)
-    @TypeConverter fun weightStrategy(v: WeightStrategy) = v.name
-    @TypeConverter fun weightStrategy(v: String) = WeightStrategy.valueOf(v)
     @TypeConverter fun segmentType(v: SegmentType) = v.name
     @TypeConverter fun segmentType(v: String) = SegmentType.valueOf(v)
     @TypeConverter fun relationType(v: RelationType) = v.name

@@ -8,7 +8,6 @@ fun uuid(): String = UUID.randomUUID().toString()
 fun now(): Long = System.currentTimeMillis()
 
 enum class SyncStatus { SYNCED, DIRTY, DELETED }
-enum class WeightStrategy { total_weight, per_hand, per_side, dumbbells_separately, raw_number }
 enum class SegmentType { main, drop, burn, partial }
 enum class RelationType { same_muscle, alternative, same_machine, different_grip, variation }
 enum class MediaType { image, gif, video, external_url }
@@ -16,7 +15,7 @@ enum class MediaType { image, gif, video, external_url }
 @Entity(tableName = "exercises")
 @Serializable data class ExerciseEntity(
     @PrimaryKey val id: String = uuid(), val name: String, val muscleGroup: String = "",
-    val description: String = "", val weightStrategy: WeightStrategy = WeightStrategy.total_weight,
+    val description: String = "", val weightStrategy: String = "",
     val restSeconds: Int = 60,
     val isArchived: Boolean = false, val createdAt: Long = now(), val updatedAt: Long = now(),
     val syncStatus: SyncStatus = SyncStatus.DIRTY, val dirty: Boolean = true

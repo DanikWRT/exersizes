@@ -46,6 +46,16 @@ import kotlinx.coroutines.flow.Flow
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertTemplate(t: WorkoutTemplateEntity)
     @Delete suspend fun deleteTemplate(t: WorkoutTemplateEntity)
 
+    @Transaction
+    suspend fun deleteExerciseWithData(exerciseId: String) {
+        deleteSetsByExerciseId(exerciseId)
+        deleteWorkoutExercisesByExerciseId(exerciseId)
+        deleteVariantsByExerciseId(exerciseId)
+        deleteExercise(exerciseId)
+    }
+    @Query("DELETE FROM workout_sets WHERE workoutExerciseId IN (SELECT id FROM workout_exercises WHERE exerciseId=:exerciseId)") suspend fun deleteSetsByExerciseId(exerciseId: String)
+    @Query("DELETE FROM workout_exercises WHERE exerciseId=:exerciseId") suspend fun deleteWorkoutExercisesByExerciseId(exerciseId: String)
+    @Query("DELETE FROM exercise_variants WHERE exerciseId=:exerciseId") suspend fun deleteVariantsByExerciseId(exerciseId: String)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertExercise(e: ExerciseEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertVariant(v: ExerciseVariantEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertAlias(a: ExerciseAliasEntity)
@@ -75,6 +85,8 @@ import kotlinx.coroutines.flow.Flow
     @Delete suspend fun deleteVariant(v: ExerciseVariantEntity)
     @Query("DELETE FROM exercise_variants WHERE id=:id") suspend fun deleteVariantById(id: String)
     @Query("SELECT COUNT(*) FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.variantId=:variantId") suspend fun countSetsForVariant(variantId: String): Int
+    @Query("SELECT COUNT(*) FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.exerciseId=:exerciseId") suspend fun countSetsForExercise(exerciseId: String): Int
+    @Query("DELETE FROM exercises WHERE id = :exerciseId") suspend fun deleteExercise(exerciseId: String)
 
     // PATCH-5: reopen completed session
     @Query("UPDATE workout_sessions SET finishedAt=NULL, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun reopenSession(id: String, ts: Long = now())
@@ -84,7 +96,7 @@ import kotlinx.coroutines.flow.Flow
     @Query("UPDATE exercise_variants SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateVariantRest(id: String, seconds: Int, ts: Long = now())
     @Query("UPDATE workout_exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateWorkoutExerciseRest(id: String, seconds: Int, ts: Long = now())
 
-    @Query("UPDATE exercises SET name=:name, muscleGroup=:group, weightStrategy=:strategy, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExercise(id: String, name: String, group: String, strategy: WeightStrategy, ts: Long = now())
+    @Query("UPDATE exercises SET name=:name, muscleGroup=:group, weightStrategy=:strategy, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExercise(id: String, name: String, group: String, strategy: String, ts: Long = now())
     @Query("UPDATE exercise_variants SET name=:name, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateVariantName(id: String, name: String, ts: Long = now())
 
     // App settings
