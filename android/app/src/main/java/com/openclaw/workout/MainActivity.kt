@@ -183,7 +183,7 @@ class MainActivity : ComponentActivity() {
         Spacer(Modifier.height(4.dp))
         LazyColumn(Modifier.heightIn(max = 200.dp)) {
             items(completed.take(10)) { session ->
-                CompletedCard(vm, session, nav)
+                CompletedCard(vm, session, nav, onReopen = { vm.reopenSession(session.id) })
             }
         }
 
@@ -208,6 +208,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable fun PlanCard(vm: WorkoutViewModel, session: WorkoutSessionEntity, nav: NavHostController, onDelete: () -> Unit) {
+    var showConfirm by remember { mutableStateOf(false) }
     Card(
         Modifier.fillMaxWidth().padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
@@ -221,12 +222,22 @@ class MainActivity : ComponentActivity() {
                 onClick = { nav.navigate("workout_execution/${session.id}") },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text("Начать") }
-            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, "Удалить") }
+            IconButton(onClick = { showConfirm = true }) { Icon(Icons.Default.Delete, "Удалить") }
         }
+    }
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = { showConfirm = false },
+            title = { Text("Удалить тренировку?") },
+            text = { Text("Дата: ${session.date}. Это действие нельзя отменить.") },
+            confirmButton = { TextButton(onClick = { onDelete(); showConfirm = false }) { Text("Удалить", color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { showConfirm = false }) { Text("Отмена") } }
+        )
     }
 }
 
-@Composable fun CompletedCard(vm: WorkoutViewModel, session: WorkoutSessionEntity, nav: NavHostController) {
+@Composable fun CompletedCard(vm: WorkoutViewModel, session: WorkoutSessionEntity, nav: NavHostController, onReopen: () -> Unit) {
+    var showConfirm by remember { mutableStateOf(false) }
     Card(
         Modifier.fillMaxWidth().padding(vertical = 2.dp).clickable { nav.navigate("view_session/${session.id}") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
@@ -237,8 +248,19 @@ class MainActivity : ComponentActivity() {
                 Text("✓ Завершена", color = Color(0xFF2E7D32), fontWeight = FontWeight.Medium)
                 Spacer(Modifier.width(4.dp))
                 Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(4.dp))
+                TextButton(onClick = { showConfirm = true }) { Text("✏️ Редактировать") }
             }
         }
+    }
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = { showConfirm = false },
+            title = { Text("Отменить завершение?") },
+            text = { Text("Тренировка ${session.date} снова появится в запланированных.") },
+            confirmButton = { TextButton(onClick = { onReopen(); showConfirm = false }) { Text("Отменить завершение") } },
+            dismissButton = { TextButton(onClick = { showConfirm = false }) { Text("Закрыть") } }
+        )
     }
 }
 

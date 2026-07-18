@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
     @Query("SELECT * FROM exercises WHERE isArchived=0 ORDER BY name") fun exercises(): Flow<List<ExerciseEntity>>
     @Query("SELECT * FROM exercises ORDER BY name") suspend fun allExercisesOnce(): List<ExerciseEntity>
     @Query("SELECT * FROM exercises WHERE id=:id") suspend fun exerciseById(id: String): ExerciseEntity?
-    @Query("SELECT * FROM exercise_variants WHERE exerciseId=:exerciseId ORDER BY isDefault DESC, name") fun variants(exerciseId: String): Flow<List<ExerciseVariantEntity>>
+    @Query("SELECT * FROM exercise_variants WHERE exerciseId=:exerciseId GROUP BY name ORDER BY isDefault DESC, name") fun variants(exerciseId: String): Flow<List<ExerciseVariantEntity>>
     @Query("SELECT * FROM exercise_variants WHERE id=:id") suspend fun variantById(id: String): ExerciseVariantEntity?
     @Query("SELECT * FROM exercise_variants") suspend fun allVariantsOnce(): List<ExerciseVariantEntity>
     @Query("SELECT * FROM exercise_aliases") suspend fun allAliasesOnce(): List<ExerciseAliasEntity>
@@ -65,6 +65,9 @@ import kotlinx.coroutines.flow.Flow
     @Delete suspend fun deleteVariant(v: ExerciseVariantEntity)
     @Query("DELETE FROM exercise_variants WHERE id=:id") suspend fun deleteVariantById(id: String)
     @Query("SELECT COUNT(*) FROM workout_sets s INNER JOIN workout_exercises we ON we.id=s.workoutExerciseId WHERE we.variantId=:variantId") suspend fun countSetsForVariant(variantId: String): Int
+
+    // PATCH-5: reopen completed session
+    @Query("UPDATE workout_sessions SET finishedAt=NULL, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun reopenSession(id: String, ts: Long = now())
 
     @Query("UPDATE workout_sets SET isCompleted=1, completedAt=:ts, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun completeSet(id: String, ts: Long = now())
     @Query("UPDATE exercises SET restSeconds=:seconds, updatedAt=:ts, dirty=1, syncStatus='DIRTY' WHERE id=:id") suspend fun updateExerciseRest(id: String, seconds: Int, ts: Long = now())
