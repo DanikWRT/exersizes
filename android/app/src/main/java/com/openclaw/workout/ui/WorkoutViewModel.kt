@@ -248,13 +248,12 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // PATCH-12: no auto "Базовый" — seedIfEmpty already creates it. Only create variant if user named it.
+    // FIX: Do not create any variant automatically in addExercise.
+    // seedIfEmpty already provides a default "Базовый" for seed data.
+    // User can add variants manually via addVariant after creating the exercise.
     fun addExercise(name: String, group: String, strategy: String, variantName: String = "") = viewModelScope.launch {
         val e = ExerciseEntity(name = name, muscleGroup = group, weightStrategy = strategy)
         repo.dao.upsertExercise(e)
-        if (variantName.isNotBlank() && repo.dao.countVariantsByName(e.id, variantName) == 0) {
-            repo.dao.upsertVariant(ExerciseVariantEntity(id = "${e.id}_${variantName}", exerciseId = e.id, name = variantName, isDefault = true))
-        }
     }
 
     fun updateExercise(exerciseId: String, name: String, group: String, strategy: String) = viewModelScope.launch {
